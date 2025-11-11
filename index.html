@@ -193,36 +193,15 @@
   <!-- JavaScript Logic -->
   <script>
     // =========================
-    // LOGO CONFIG (เปลี่ยน path ให้ตรงกับไฟล์ของคุณ)
+    // LOGO CONFIG – รูปอยู่ในโฟลเดอร์ img/
     // =========================
-    // เช่น วางในโฟลเดอร์ img/ ก็แก้เป็น "img/xxxx.png"
-    const LOGO_PROJECT_V_SRC = "img/project-v-logo.png";   // โลโก้ Project V / Tournament
-    const LOGO_PSU_SRC       = "img/psu-logo.png";         // โลโก้ PSU
-    const LOGO_VALORANT_SRC  = "img/valorant-logo.png";    // โลโก้ Valorant
+    const LOGO_PROJECT_V_SRC = "img/project-v-logo.png";
+    const LOGO_PSU_SRC       = "img/psu-logo.png";
+    const LOGO_VALORANT_SRC  = "img/valorant-logo.png";
 
     const logoProjectV = new Image();
     const logoPSU = new Image();
     const logoValorant = new Image();
-
-    let logosLoaded = false;
-    let logoLoadedCount = 0;
-
-    function onLogoLoaded() {
-      logoLoadedCount++;
-      if (logoLoadedCount >= 3) {
-        logosLoaded = true;
-        console.log("All logos loaded");
-      }
-    }
-
-    logoProjectV.onload = onLogoLoaded;
-    logoPSU.onload = onLogoLoaded;
-    logoValorant.onload = onLogoLoaded;
-
-    // ถ้าโหลดไม่ได้ก็ถือว่า loaded เพื่อให้วาดแบบไม่มีรูปโลโก้ได้
-    logoProjectV.onerror = onLogoLoaded;
-    logoPSU.onerror = onLogoLoaded;
-    logoValorant.onerror = onLogoLoaded;
 
     logoProjectV.src = LOGO_PROJECT_V_SRC;
     logoPSU.src = LOGO_PSU_SRC;
@@ -342,10 +321,8 @@
             return;
           }
 
-          // เปิดในแท็บใหม่
           window.open(item.imageDataUrl, "_blank");
 
-          // แสดงใน SweetAlert พร้อมปุ่มดาวน์โหลด
           Swal.fire({
             title: "ตัวอย่างเกียรติบัตร",
             html: `
@@ -372,7 +349,7 @@
     }
 
     // =========================
-    // Draw Esport Certificate (White/Red พร้อมโลโก้)
+    // Draw Esport Certificate (White/Red + โลโก้/ข้อความ)
     // =========================
     function drawEsportCertificate(idString, name, position) {
       const w = certCanvas.width;
@@ -403,12 +380,9 @@
       ctx.strokeStyle = "#111827";
       ctx.lineWidth = 8;
       ctx.beginPath();
-      ctx.moveTo(80, 120);
-      ctx.lineTo(220, 120);
-      ctx.moveTo(80, 140);
-      ctx.lineTo(200, 140);
-      ctx.moveTo(80, 160);
-      ctx.lineTo(180, 160);
+      ctx.moveTo(80, 120); ctx.lineTo(220, 120);
+      ctx.moveTo(80, 140); ctx.lineTo(200, 140);
+      ctx.moveTo(80, 160); ctx.lineTo(180, 160);
       ctx.stroke();
       ctx.restore();
 
@@ -529,63 +503,55 @@
       ctx.font = "20px Sarabun";
       ctx.fillText("EVENT DIRECTOR", w / 2, baseY + 35);
 
-      // พื้นหลังสำหรับโลโก้ด้านล่าง
+      // แถบดำด้านล่างสำหรับโลโก้
       ctx.save();
       ctx.globalAlpha = 0.92;
       ctx.fillStyle = "#111827";
-      ctx.fillRect(120, h - 150, 380, 90);       // แถบซ้าย
-      ctx.fillRect(w - 500, h - 150, 380, 90);   // แถบขวา
+      ctx.fillRect(120, h - 150, 380, 90);       // ซ้าย
+      ctx.fillRect(w - 500, h - 150, 380, 90);   // ขวา
       ctx.restore();
 
-      // โลโก้
-      if (logosLoaded) {
+      // เช็คว่ารูปโหลดสำเร็จจริงหรือไม่
+      const canDrawLogos =
+        logoProjectV.complete && logoProjectV.naturalWidth > 0 &&
+        logoPSU.complete && logoPSU.naturalWidth > 0 &&
+        logoValorant.complete && logoValorant.naturalWidth > 0;
+
+      if (canDrawLogos) {
         const logoHeight = 60;
 
         // Project V
-        const pvRatio = logoProjectV.width / logoProjectV.height || 2;
+        const pvRatio = logoProjectV.width / logoProjectV.height;
         const pvWidth = logoHeight * pvRatio;
-        ctx.drawImage(
-          logoProjectV,
-          140,
-          h - 140,
-          pvWidth,
-          logoHeight
-        );
+        ctx.drawImage(logoProjectV, 140, h - 140, pvWidth, logoHeight);
 
         // PSU
-        const psuRatio = logoPSU.width / logoPSU.height || 2;
+        const psuRatio = logoPSU.width / logoPSU.height;
         const psuWidth = logoHeight * psuRatio;
-        ctx.drawImage(
-          logoPSU,
-          160 + pvWidth,
-          h - 140,
-          psuWidth,
-          logoHeight
-        );
+        ctx.drawImage(logoPSU, 160 + pvWidth, h - 140, psuWidth, logoHeight);
 
-        // Valorant (ฝั่งขวา)
-        const vRatio = logoValorant.width / logoValorant.height || 2;
+        // Valorant
+        const vRatio = logoValorant.width / logoValorant.height;
         const vWidth = logoHeight * vRatio;
         const rightBlockX = w - 500;
-        ctx.drawImage(
-          logoValorant,
-          rightBlockX + 60,
-          h - 140,
-          vWidth,
-          logoHeight
-        );
+        ctx.drawImage(logoValorant, rightBlockX + 60, h - 140, vWidth, logoHeight);
       } else {
-        // fallback เป็นข้อความ
+        // ถ้าโลโก้โหลดไม่สำเร็จ ใช้ข้อความแทน
         ctx.textAlign = "left";
         ctx.font = "bold 22px Sarabun";
         ctx.fillStyle = "#f9fafb";
-        ctx.fillText("PROJECT V  |  PSU", 140, h - 95);
+        ctx.fillText("PROJECT V", 140, h - 110);
+        ctx.font = "18px Sarabun";
+        ctx.fillText("PSU ESPORTS STUDIO", 140, h - 80);
 
         ctx.textAlign = "right";
-        ctx.fillText("VALORANT", w - 140, h - 95);
+        ctx.font = "bold 22px Sarabun";
+        ctx.fillText("VALORANT", w - 140, h - 110);
+        ctx.font = "18px Sarabun";
+        ctx.fillText("E-SPORT TOURNAMENT", w - 140, h - 80);
       }
 
-      // แสดง ID มุมขวาบน
+      // ID มุมขวาบน
       ctx.textAlign = "right";
       ctx.font = "18px Sarabun";
       ctx.fillStyle = "#4b5563";
