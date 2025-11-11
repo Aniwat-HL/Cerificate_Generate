@@ -5,33 +5,34 @@
   <title>ระบบเกียรติบัตร Valorant E-sport</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Google Font: Sarabun -->
+  <!-- ฟอนต์ Sarabun -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet" />
 
-  <!-- Tailwind -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: { sarabun: ['Sarabun','sans-serif'] },
-          colors: { primary:'#ef4444', secondary:'#0f172a' },
+          fontFamily: { sarabun: ['Sarabun', 'sans-serif'] },
+          colors: { primary: '#ef4444', secondary: '#0f172a' },
         },
       },
     };
   </script>
 
+  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    body { font-family:'Sarabun',sans-serif; }
+    body { font-family: 'Sarabun', sans-serif; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
-  <!-- Loading -->
+  <!-- Loading Overlay -->
   <div id="loadingOverlay" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden">
     <div class="flex flex-col items-center gap-3">
       <div class="w-12 h-12 border-4 border-slate-400 border-t-primary rounded-full animate-spin"></div>
@@ -46,7 +47,7 @@
         ระบบ สร้าง/ค้นหา/ดาวน์โหลด เกียรติบัตร Valorant E-sport
       </h1>
       <p class="text-sm md:text-base text-slate-100/90 mt-2">
-        กรอกข้อมูลผู้เล่น Valorant แล้วรับเกียรติบัตรธีม E-sport ขาว-แดง พร้อมลายเซ็น Nattasan โดยอัตโนมัติ (ข้อมูลเก็บในเครื่อง)
+        กรอกข้อมูล {ID, name, position} แล้วสร้างเกียรติบัตรตามเทมเพลต Valorant แบบตัวอย่างนี้ได้ทันที (ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้)
       </p>
     </div>
   </header>
@@ -54,25 +55,26 @@
   <!-- Main -->
   <main class="flex-1">
     <div class="max-w-5xl mx-auto px-4 py-8 space-y-8">
-      <!-- Form -->
+
+      <!-- ฟอร์มสร้างเกียรติบัตร -->
       <section class="bg-slate-900/70 border border-slate-700 rounded-2xl p-6 shadow-lg">
         <h2 class="text-xl md:text-2xl font-semibold mb-2">สร้างเกียรติบัตร Valorant Tournament</h2>
         <p class="text-sm text-slate-300 mb-4">
-          กรอกข้อมูลให้ครบ ระบบจะสร้างเกียรติบัตรธีม E-sport ขาว-แดง พร้อมลายเซ็น
-          <span class="font-semibold text-primary">EVENT DIRECTOR : Nattasan</span>
+          ระบบจะใช้รูปเทมเพลตใบเกียรติบัตร Valorant (แบบตัวอย่าง) เป็นพื้นหลัง แล้วใส่ชื่อ / ตำแหน่ง / ID ให้โดยอัตโนมัติ พร้อมลายเซ็น EVENT DIRECTOR : Nattasan
         </p>
+
         <form id="certForm" class="grid md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm mb-1">ID เกียรติบัตร (สร้างอัตโนมัติ)</label>
-            <input id="certIdInput" type="text" class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" readonly/>
+            <input id="certIdInput" type="text" class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" readonly />
           </div>
           <div>
             <label class="block text-sm mb-1">ชื่อผู้รับ (name)</label>
-            <input id="nameInput" type="text" required class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" placeholder="ชื่อ-นามสกุล"/>
+            <input id="nameInput" type="text" required class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" placeholder="ชื่อ-นามสกุล" />
           </div>
           <div class="md:col-span-2">
             <label class="block text-sm mb-1">ตำแหน่ง (position)</label>
-            <input id="positionInput" type="text" required class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" placeholder="เช่น Player, MVP, Event Staff ฯลฯ"/>
+            <input id="positionInput" type="text" required class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" placeholder="เช่น Player, Team Captain, MVP, Event Staff ฯลฯ" />
           </div>
           <div class="md:col-span-2 flex justify-between items-center mt-2">
             <button type="submit" class="rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold hover:bg-red-500 transition shadow-md">
@@ -83,15 +85,15 @@
         </form>
       </section>
 
-      <!-- Search -->
+      <!-- ค้นหาเกียรติบัตร -->
       <section class="bg-slate-900/70 border border-slate-700 rounded-2xl p-6 shadow-lg">
         <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div class="flex-1">
             <h2 class="text-xl md:text-2xl font-semibold mb-2">ค้นหาเกียรติบัตร</h2>
-            <p class="text-sm text-slate-300">ค้นหาด้วยชื่อหรือ ID หากเว้นว่างแล้วกดค้นหา ระบบจะแสดงทั้งหมด</p>
+            <p class="text-sm text-slate-300">ค้นหาด้วยชื่อหรือ ID ถ้าไม่กรอกอะไรแล้วกดค้นหาจะแสดงทั้งหมด</p>
           </div>
           <div class="w-full md:w-80 flex flex-col gap-2">
-            <input id="searchInput" type="text" class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" placeholder="พิมพ์ชื่อหรือ ID เกียรติบัตร..."/>
+            <input id="searchInput" type="text" class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" placeholder="พิมพ์ชื่อหรือ ID..." />
             <div class="flex gap-2">
               <button id="searchBtn" class="flex-1 rounded-xl bg-primary px-3 py-2 text-sm font-semibold hover:bg-red-500 transition">ค้นหา</button>
               <button id="clearBtn" class="flex-1 rounded-xl bg-slate-700 px-3 py-2 text-sm hover:bg-slate-600 transition">ล้าง</button>
@@ -104,154 +106,251 @@
     </div>
   </main>
 
+  <!-- Footer -->
   <footer class="border-t border-slate-800 bg-slate-950/90">
     <div class="max-w-5xl mx-auto px-4 py-4 text-center text-xs md:text-sm text-slate-400">
       © 2025 Copyright | พัฒนาโดย ____________________
     </div>
   </footer>
 
-  <canvas id="certCanvas" width="1600" height="900" class="hidden"></canvas>
+  <!-- Canvas ใบเกียรติบัตร -->
+  <canvas id="certCanvas" width="1920" height="1080" class="hidden"></canvas>
 
   <script>
-    // LOGO CONFIG
-    const LOGO_PROJECT_V_SRC="img/project-v-logo.png";
-    const LOGO_PSU_SRC="img/psu-logo.png";
-    const LOGO_VALORANT_SRC="img/valorant-logo.png";
-    const logoProjectV=new Image(),logoPSU=new Image(),logoValorant=new Image();
-    logoProjectV.src=LOGO_PROJECT_V_SRC; logoPSU.src=LOGO_PSU_SRC; logoValorant.src=LOGO_VALORANT_SRC;
+    // ---------- CONFIG เทมเพลตรูปใบเกียรติบัตร ----------
+    const TEMPLATE_SRC = "img/certificate-template.png"; // ให้ชื่อไฟล์ตรงนี้
+    const templateImg = new Image();
+    let templateLoaded = false;
 
-    const STORAGE_KEY="valorant_esport_certs_v1";
-    let certificates=[];
+    templateImg.onload = () => { templateLoaded = true; };
+    templateImg.onerror = () => {
+      console.error("โหลดรูปเทมเพลตไม่สำเร็จ:", TEMPLATE_SRC);
+      templateLoaded = false;
+    };
+    templateImg.src = TEMPLATE_SRC;
 
-    const loadingOverlay=document.getElementById("loadingOverlay");
-    const certForm=document.getElementById("certForm");
-    const certIdInput=document.getElementById("certIdInput");
-    const nameInput=document.getElementById("nameInput");
-    const positionInput=document.getElementById("positionInput");
-    const certStatusEl=document.getElementById("certStatus");
-    const searchInput=document.getElementById("searchInput");
-    const searchBtn=document.getElementById("searchBtn");
-    const clearBtn=document.getElementById("clearBtn");
-    const cardsContainer=document.getElementById("cardsContainer");
-    const searchResultMessage=document.getElementById("searchResultMessage");
-    const certCanvas=document.getElementById("certCanvas");
-    const ctx=certCanvas.getContext("2d");
+    // ---------- STATE & DOM ----------
+    const STORAGE_KEY = "valorant_esport_certs_v1";
+    let certificates = []; // { idNumber, idString, name, position, imageDataUrl }
 
-    function showLoading(){loadingOverlay.classList.remove("hidden");}
-    function hideLoading(){loadingOverlay.classList.add("hidden");}
+    const loadingOverlay = document.getElementById("loadingOverlay");
+    const certForm = document.getElementById("certForm");
+    const certIdInput = document.getElementById("certIdInput");
+    const nameInput = document.getElementById("nameInput");
+    const positionInput = document.getElementById("positionInput");
+    const certStatusEl = document.getElementById("certStatus");
 
-    function loadFromStorage(){try{const raw=localStorage.getItem(STORAGE_KEY);return raw?JSON.parse(raw):[]}catch{return[];}}
-    function saveToStorage(){localStorage.setItem(STORAGE_KEY,JSON.stringify(certificates));}
-    function getNextIdNumber(){return certificates.length?Math.max(...certificates.map(c=>c.idNumber))+1:1;}
-    function formatId(n){return String(n).padStart(3,"0");}
+    const searchInput = document.getElementById("searchInput");
+    const searchBtn = document.getElementById("searchBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const cardsContainer = document.getElementById("cardsContainer");
+    const searchResultMessage = document.getElementById("searchResultMessage");
 
-    function renderCards(list){
-      cardsContainer.innerHTML="";
-      if(!list||!list.length){searchResultMessage.textContent="ไม่พบข้อมูลที่ค้นหา";return;}
-      searchResultMessage.textContent=`พบทั้งหมด ${list.length} รายการ`;
-      list.forEach(item=>{
-        const card=document.createElement("div");
-        card.className="bg-slate-800/80 border border-slate-700 rounded-2xl p-4 shadow-md";
-        card.innerHTML=`<p class="text-sm"><b>ID:</b> ${item.idString}</p>
-          <p class="text-sm"><b>ชื่อ:</b> ${item.name}</p>
-          <p class="text-sm"><b>ตำแหน่ง:</b> ${item.position}</p>
-          <button class="w-full mt-3 rounded-xl bg-primary px-3 py-2 text-xs font-semibold hover:bg-red-500">ดู/ดาวน์โหลด</button>`;
-        card.querySelector("button").onclick=()=>{
-          if(!item.imageDataUrl)return Swal.fire({icon:"error",title:"ไม่พบรูปเกียรติบัตร"});
-          window.open(item.imageDataUrl,"_blank");
-          Swal.fire({title:"ตัวอย่างเกียรติบัตร",html:`<img src="${item.imageDataUrl}" class="w-full rounded-xl border border-slate-700 mb-3"/><a href="${item.imageDataUrl}" download="Certificate_${item.idString}.png" class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold bg-primary hover:bg-red-500">ดาวน์โหลด PNG</a>`,showConfirmButton:false,showCloseButton:true,width:"720px",customClass:{popup:"bg-slate-900 text-slate-100"}});
+    const certCanvas = document.getElementById("certCanvas");
+    const ctx = certCanvas.getContext("2d");
+
+    // ---------- Helper ----------
+    const showLoading = () => loadingOverlay.classList.remove("hidden");
+    const hideLoading = () => loadingOverlay.classList.add("hidden");
+
+    const loadFromStorage = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    };
+
+    const saveToStorage = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(certificates));
+    };
+
+    const getNextIdNumber = () => {
+      if (!certificates.length) return 1;
+      return Math.max(...certificates.map(c => c.idNumber)) + 1;
+    };
+
+    const formatId = n => String(n).padStart(3, "0");
+
+    // ---------- Render Cards ----------
+    function renderCards(list) {
+      cardsContainer.innerHTML = "";
+      if (!list || !list.length) {
+        searchResultMessage.textContent = "ไม่พบข้อมูลที่ค้นหา";
+        return;
+      }
+      searchResultMessage.textContent = `พบทั้งหมด ${list.length} รายการ`;
+
+      list.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "bg-slate-800/80 border border-slate-700 rounded-2xl p-4 shadow-md flex flex-col justify-between";
+
+        card.innerHTML = `
+          <div class="text-sm space-y-1">
+            <p><span class="font-semibold">ID:</span> ${item.idString}</p>
+            <p><span class="font-semibold">ชื่อ:</span> ${item.name}</p>
+            <p><span class="font-semibold">ตำแหน่ง:</span> ${item.position}</p>
+          </div>
+          <button class="mt-3 w-full rounded-xl bg-primary px-3 py-2 text-xs font-semibold hover:bg-red-500 transition">
+            ดู / ดาวน์โหลดเกียรติบัตร
+          </button>
+        `;
+
+        card.querySelector("button").onclick = () => {
+          if (!item.imageDataUrl) {
+            Swal.fire({ icon: "error", title: "ไม่พบรูปเกียรติบัตร" });
+            return;
+          }
+          window.open(item.imageDataUrl, "_blank");
+          Swal.fire({
+            title: "ตัวอย่างเกียรติบัตร",
+            html: `
+              <img src="${item.imageDataUrl}" class="w-full rounded-xl border border-slate-700 mb-3" />
+              <a href="${item.imageDataUrl}" download="Certificate_${item.idString}.png"
+                 class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold bg-primary hover:bg-red-500">
+                ดาวน์โหลดไฟล์ PNG
+              </a>
+            `,
+            width: "720px",
+            showConfirmButton: false,
+            showCloseButton: true,
+            customClass: { popup: "bg-slate-900 text-slate-100" },
+          });
         };
+
         cardsContainer.appendChild(card);
       });
     }
 
-    // -------- Certificate Drawing --------
-    function drawEsportCertificate(idString,name,position){
-      const w=certCanvas.width,h=certCanvas.height;
-      ctx.fillStyle="#ffffff";ctx.fillRect(0,0,w,h);
+    // ---------- วาดใบเกียรติบัตรบน Canvas ----------
+    function drawCertificate(idString, name, position) {
+      const w = certCanvas.width;
+      const h = certCanvas.height;
 
-      // แถบแดงขวา
-      ctx.save();ctx.fillStyle="#ef4444";
-      ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(w,h);ctx.lineTo(w-200,h);ctx.lineTo(w-320,0);ctx.closePath();ctx.fill();ctx.restore();
-
-      // กรอบ
-      ctx.strokeStyle="#111827";ctx.lineWidth=4;ctx.strokeRect(60,60,w-120,h-120);
-
-      ctx.fillStyle="#111827";ctx.textAlign="center";
-      ctx.font="bold 70px Sarabun";ctx.fillText("CERTIFICATE",w/2,190);
-      ctx.fillStyle="#b91c1c";ctx.font="600 40px Sarabun";ctx.fillText("OF PARTICIPATION",w/2,240);
-      ctx.fillStyle="#4b5563";ctx.font="22px Sarabun";ctx.fillText("THIS CERTIFICATE IS PROUDLY PRESENTED TO",w/2,290);
-      ctx.fillStyle="#111827";ctx.font="bold 46px Sarabun";ctx.fillText(name,w/2,360);
-      ctx.beginPath();ctx.moveTo(w/2-260,380);ctx.lineTo(w/2+260,380);ctx.strokeStyle="#d1d5db";ctx.lineWidth=2;ctx.stroke();
-
-      ctx.fillStyle="#374151";ctx.font="22px Sarabun";
-      ctx.fillText("You have participated in the Valorant Tournament under the Project V esports program.",w/2,440);
-      ctx.fillText("Thank you for being a part of the E-SPORT course project and competitive community.",w/2,475);
-      ctx.font="24px Sarabun";ctx.fillText("Position: "+position,w/2,520);
-
-      const now=new Date();
-      const dateStr=now.toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
-      ctx.fillText(dateStr,w/2,560);
-
-      // ลายเซ็น
-      ctx.textAlign="center";const baseY=720;
-      ctx.beginPath();ctx.moveTo(w/2-200,baseY);ctx.lineTo(w/2+200,baseY);ctx.strokeStyle="#111827";ctx.lineWidth=2;ctx.stroke();
-      ctx.font="italic 32px Sarabun";ctx.fillStyle="#111827";ctx.fillText("Nattasan",w/2,baseY-15);
-      ctx.font="20px Sarabun";ctx.fillText("EVENT DIRECTOR",w/2,baseY+35);
-
-      // โลโก้เรียงชิดกันกลางล่าง
-      const canDraw=[logoProjectV,logoPSU,logoValorant].every(l=>l.complete&&l.naturalWidth>0);
-      if(canDraw){
-        const hgt=60,margin=10;
-        const ratios=[logoProjectV.width/logoProjectV.height,logoPSU.width/logoPSU.height,logoValorant.width/logoValorant.height];
-        const widths=ratios.map(r=>r*hgt);
-        const totalW=widths.reduce((a,b)=>a+b)+margin*2;
-        let x=(w-totalW)/2;
-        const y=h-120;
-        ctx.drawImage(logoProjectV,x,y,widths[0],hgt);
-        x+=widths[0]+margin;
-        ctx.drawImage(logoPSU,x,y,widths[1],hgt);
-        x+=widths[1]+margin;
-        ctx.drawImage(logoValorant,x,y,widths[2],hgt);
+      // พื้นหลังจากรูปเทมเพลต
+      if (templateLoaded) {
+        ctx.drawImage(templateImg, 0, 0, w, h);
+      } else {
+        // เผื่อโหลดรูปไม่ทัน จะใช้พื้นขาวแทน
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, w, h);
       }
 
-      ctx.textAlign="right";ctx.font="18px Sarabun";ctx.fillStyle="#4b5563";ctx.fillText("ID: "+idString,w-80,100);
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#111827";
+
+      // ชื่อผู้รับ (อยู่ตรงกลาง ใต้ข้อความ THIS CERTIFICATE IS PROUDLY PRESENTED TO)
+      ctx.font = "bold 56px 'Times New Roman', serif";
+      ctx.fillText(name, w / 2, 470);
+
+      // ตำแหน่ง (เล็กกว่าหน่อย อยู่ใต้ชื่อ)
+      ctx.font = "24px 'Times New Roman', serif";
+      ctx.fillText(position, w / 2, 510);
+
+      // วันที่ (ทับวันที่เดิมให้เป็นวันที่ปัจจุบัน)
+      const now = new Date();
+      const dateStr = now.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      ctx.font = "22px 'Times New Roman', serif";
+      ctx.fillText(dateStr, w / 2, 690); // พิกัดใกล้ ๆ ตำแหน่งวันเดิมในเทมเพลต
+
+      // ID เล็ก ๆ มุมขวาบน
+      ctx.textAlign = "right";
+      ctx.font = "18px 'Sarabun', sans-serif";
+      ctx.fillStyle = "#4b5563";
+      ctx.fillText("ID: " + idString, w - 120, 130);
     }
 
-    function generateCertificateImage(idString,name,position){
-      drawEsportCertificate(idString,name,position);
+    function generateCertificateImage(idString, name, position) {
+      drawCertificate(idString, name, position);
       return certCanvas.toDataURL("image/png");
     }
 
-    certForm.onsubmit=e=>{
+    // ---------- Submit ฟอร์ม ----------
+    certForm.addEventListener("submit", e => {
       e.preventDefault();
-      const name=nameInput.value.trim(),pos=positionInput.value.trim();
-      if(!name||!pos)return Swal.fire({icon:"warning",title:"กรอกข้อมูลไม่ครบ"});
-      const idNum=getNextIdNumber(),idStr=formatId(idNum);
-      certStatusEl.textContent="กำลังสร้าง...";
+      const name = nameInput.value.trim();
+      const position = positionInput.value.trim();
+
+      if (!name || !position) {
+        Swal.fire({ icon: "warning", title: "กรอกข้อมูลไม่ครบ", text: "กรุณากรอกชื่อและตำแหน่งให้ครบ" });
+        return;
+      }
+
+      if (!templateLoaded) {
+        Swal.fire({ icon: "warning", title: "รูปเทมเพลตยังโหลดไม่เสร็จ", text: "ลองกดอีกครั้งในอีกสักครู่" });
+        return;
+      }
+
+      const idNumber = getNextIdNumber();
+      const idString = formatId(idNumber);
+
+      certStatusEl.textContent = "กำลังสร้างเกียรติบัตร...";
       showLoading();
-      setTimeout(()=>{
-        const img=generateCertificateImage(idStr,name,pos);
-        certificates.push({idNumber:idNum,idString:idStr,name,position:pos,imageDataUrl:img});
-        saveToStorage();renderCards(certificates);
-        certStatusEl.textContent="สร้างสำเร็จ!";certForm.reset();
-        certIdInput.value=formatId(getNextIdNumber());
+
+      setTimeout(() => {
+        const imageDataUrl = generateCertificateImage(idString, name, position);
+
+        certificates.push({ idNumber, idString, name, position, imageDataUrl });
+        saveToStorage();
+        renderCards(certificates);
+
+        certStatusEl.textContent = "สร้างเกียรติบัตรสำเร็จ!";
+        certForm.reset();
+        certIdInput.value = formatId(getNextIdNumber());
         hideLoading();
-        Swal.fire({title:"สร้างเกียรติบัตรสำเร็จ",html:`<img src="${img}" class="w-full rounded-xl border border-slate-700 mb-3"/><a href="${img}" download="Certificate_${idStr}.png" class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold bg-primary hover:bg-red-500">ดาวน์โหลด PNG</a>`,width:"720px",showConfirmButton:false,showCloseButton:true,customClass:{popup:"bg-slate-900 text-slate-100"}});
-      },300);
-    };
 
-    function filterCertificates(k){
-      k=k.trim().toLowerCase();if(!k)return certificates;
-      return certificates.filter(c=>c.idString.toLowerCase().includes(k)||c.name.toLowerCase().includes(k));
+        Swal.fire({
+          title: "สร้างเกียรติบัตรสำเร็จ",
+          html: `
+            <img src="${imageDataUrl}" class="w-full rounded-xl border border-slate-700 mb-3" />
+            <a href="${imageDataUrl}" download="Certificate_${idString}.png"
+               class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold bg-primary hover:bg-red-500">
+              ดาวน์โหลดไฟล์ PNG
+            </a>
+          `,
+          width: "720px",
+          showConfirmButton: false,
+          showCloseButton: true,
+          customClass: { popup: "bg-slate-900 text-slate-100" },
+        });
+      }, 300);
+    });
+
+    // ---------- Search ----------
+    function filterCertificates(keyword) {
+      keyword = keyword.trim().toLowerCase();
+      if (!keyword) return certificates;
+      return certificates.filter(item =>
+        (item.idString || "").toLowerCase().includes(keyword) ||
+        (item.name || "").toLowerCase().includes(keyword)
+      );
     }
-    searchBtn.onclick=()=>renderCards(filterCertificates(searchInput.value));
-    clearBtn.onclick=()=>{searchInput.value="";renderCards(certificates);searchResultMessage.textContent="";};
 
-    window.onload=()=>{
-      showLoading();certificates=loadFromStorage();renderCards(certificates);
-      certIdInput.value=formatId(getNextIdNumber());hideLoading();
-    };
+    searchBtn.addEventListener("click", () => {
+      const list = filterCertificates(searchInput.value);
+      renderCards(list);
+    });
+
+    clearBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      renderCards(certificates);
+      searchResultMessage.textContent = "";
+    });
+
+    // ---------- Initial Load ----------
+    window.addEventListener("DOMContentLoaded", () => {
+      showLoading();
+      certificates = loadFromStorage();
+      renderCards(certificates);
+      certIdInput.value = formatId(getNextIdNumber());
+      hideLoading();
+    });
   </script>
 </body>
 </html>
