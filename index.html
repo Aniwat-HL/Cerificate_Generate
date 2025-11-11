@@ -47,7 +47,8 @@
             <div>
               <label class="block text-sm mb-1">ID (อัตโนมัติ)</label>
               <input id="certIdInput" readonly
-                     class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" />
+                     class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                     placeholder="กำลังดึงจาก Firebase..." />
             </div>
             <div>
               <label class="block text-sm mb-1">ชื่อผู้รับ</label>
@@ -168,7 +169,6 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-
     const COLLECTION_NAME = "valorant_feedback";
 
     // ---------- เทมเพลตเกียรติบัตร ----------
@@ -181,20 +181,6 @@
       templateLoaded = false;
     };
     templateImg.src = TEMPLATE_SRC;
-
-    // ---------- เกี่ยวกับ ID (ใช้ localStorage เป็นตัวรันเลข) ----------
-    const ID_STORAGE_KEY = "valorant_last_id";
-    function loadLastId() {
-      const raw = localStorage.getItem(ID_STORAGE_KEY);
-      const n = parseInt(raw, 10);
-      return isNaN(n) ? 0 : n;
-    }
-    function saveLastId(n) {
-      localStorage.setItem(ID_STORAGE_KEY, String(n));
-    }
-    function fmtId(n) {
-      return String(n).padStart(3, "0");
-    }
 
     // ---------- DOM ----------
     const certCanvas = document.getElementById("certCanvas");
@@ -215,7 +201,38 @@
     const searchStatus = document.getElementById("searchStatus");
     const searchResults = document.getElementById("searchResults");
 
-    let lastIdNumber = loadLastId();
+    // ---------- Helper: format ID ----------
+    function fmtId(n) {
+      return String(n).padStart(3, "0");
+    }
+
+    // ---------- ดึงเลข ID ถัดไปจาก Firebase ----------
+    async function getNextIdNumberFromFirebase() {
+      const snap = await db.collection(COLLECTION_NAME)
+        .orderBy("idNumber", "desc")
+        .limit(1)
+        .get();
+
+      if (snap.empty) {
+        return 1; // ยังไม่มีข้อมูลเลย → เริ่มที่ 1 (001)
+      } else {
+        const data = snap.docs[0].data();
+        const last = typeof data.idNumber === "number"
+          ? data.idNumber
+          : parseInt(data.idNumber, 10) || 0;
+        return last + 1;
+      }
+    }
+
+    async function previewNextId() {
+      try {
+        const nextNum = await getNextIdNumberFromFirebase();
+        certIdInput.value = fmtId(nextNum);
+      } catch (err) {
+        console.error("ดึงเลข ID จาก Firebase ไม่สำเร็จ:", err);
+        certIdInput.value = "ERROR";
+      }
+    }
 
     // ---------- วาดใบเกียรติบัตร ----------
     function drawCertificate(id, name, position) {
@@ -268,21 +285,16 @@
 
     // ---------- บันทึกแบบประเมินลง Firestore ----------
     async function saveFeedbackToFirebase(record) {
-      try {
-        await db.collection(COLLECTION_NAME).add({
-          idNumber: record.idNumber,
-          idString: record.idString,
-          name: record.name,
-          position: record.position,
-          feeling: record.feeling,
-          score: record.score,
-          suggestion: record.suggestion,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        console.log("บันทึกข้อมูลลง Firestore สำเร็จ");
-      } catch (err) {
-        console.error("บันทึกแบบประเมินลง Firestore ล้มเหลว:", err);
-      }
+      await db.collection(COLLECTION_NAME).add({
+        idNumber: record.idNumber,
+        idString: record.idString,
+        name: record.name,
+        position: record.position,
+        feeling: record.feeling,
+        score: record.score,
+        suggestion: record.suggestion,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
     }
 
     // ---------- Submit ฟอร์ม ----------
@@ -323,9 +335,6 @@
         return;
       }
 
-      const idNumber = lastIdNumber + 1;
-      const idString = fmtId(idNumber);
-
       certStatus.textContent = "กำลังสร้างเกียรติบัตร...";
 
       Swal.fire({
@@ -335,12 +344,11 @@
       });
 
       try {
-        const imgUrl = generateCertificateImage(idString, name, position);
+        // ขอ ID ล่าสุดจาก Firebase แล้วเพิ่ม 1
+        const idNumber = await getNextIdNumberFromFirebase();
+        const idString = fmtId(idNumber);
 
-        // อัปเดต ID ล่าสุดใน localStorage
-        lastIdNumber = idNumber;
-        saveLastId(lastIdNumber);
-        certIdInput.value = fmtId(lastIdNumber + 1);
+        const imgUrl = generateCertificateImage(idString, name, position);
 
         // บันทึกลง Firestore
         await saveFeedbackToFirebase({
@@ -354,6 +362,7 @@
         });
 
         certStatus.textContent = "สร้างเกียรติบัตรสำเร็จ!";
+
         // เคลียร์เฉพาะคำถาม
         feelingInput.value = "";
         scoreInput.value = "";
@@ -361,6 +370,9 @@
 
         Swal.close();
         showCertificateModal(imgUrl, idString);
+
+        // อัปเดต ID ถัดไปไว้โชว์
+        previewNextId();
       } catch (err) {
         console.error(err);
         Swal.fire({
@@ -372,7 +384,7 @@
       }
     });
 
-    // ---------- ค้นหาจาก Firebase ----------
+    // ---------- แสดงผลค้นหา ----------
     function renderSearchResults(list) {
       searchResults.innerHTML = "";
       if (!list.length) {
@@ -410,6 +422,7 @@
       });
     }
 
+    // ---------- ค้นหาจาก Firebase ----------
     async function searchFromFirebase(keyword) {
       searchStatus.textContent = "กำลังค้นหาข้อมูลจาก Firebase...";
       searchResults.innerHTML = "";
@@ -425,15 +438,11 @@
             .get();
           snap.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
         } else {
-          const key = keyword.toLowerCase();
-
-          // ค้นหา ID ตรงตัว
           const byIdSnap = await db.collection(COLLECTION_NAME)
             .where("idString", "==", keyword)
             .get();
           byIdSnap.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
 
-          // ค้นหา name แบบขึ้นต้น (prefix) ด้วยคำค้น (ต้อง orderBy name ถึงใช้ startAt ได้)
           const byNameSnap = await db.collection(COLLECTION_NAME)
             .orderBy("name")
             .startAt(keyword)
@@ -441,7 +450,6 @@
             .get();
           byNameSnap.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
 
-          // ลบ duplicate (ถ้า doc ซ้ำกัน)
           const seen = new Set();
           docs = docs.filter(d => {
             if (seen.has(d.id)) return false;
@@ -472,7 +480,7 @@
 
     // ---------- Initial load ----------
     window.addEventListener("load", () => {
-      certIdInput.value = fmtId(lastIdNumber + 1);
+      previewNextId();   // ดึงเลข ID ถัดไปจาก Firebase มาโชว์ (เริ่มที่ 001)
     });
   </script>
 </body>
