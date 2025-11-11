@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>ระบบ สร้าง/ค้นหา/ดาวน์โหลด เกียรติบัตรออนไลน์</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Google Font: Sarabun -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sarabun: ['Sarabun', 'sans-serif'],
+          },
+          colors: {
+            primary: '#ef4444',
+            secondary: '#0f172a',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Loading Overlay -->
+  <div
+    id="loadingOverlay"
+    class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden"
+  >
+    <div class="flex flex-col items-center gap-3">
+      <div class="w-12 h-12 border-4 border-slate-400 border-t-primary rounded-full animate-spin"></div>
+      <p class="text-slate-100 text-sm">กำลังประมวลผล กรุณารอสักครู่...</p>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-primary to-pink-600 shadow-lg">
+    <div class="max-w-5xl mx-auto px-4 py-6">
+      <h1 class="text-2xl md:text-3xl font-bold tracking-wide">
+        ระบบ สร้าง/ค้นหา/ดาวน์โหลด เกียรติบัตรออนไลน์
+      </h1>
+      <p class="text-sm md:text-base text-slate-100/90 mt-2">
+        ทำแบบทดสอบ &gt; สร้างเกียรติบัตร &gt; ค้นหา &gt; เปิดดู/ดาวน์โหลด – จบในหน้าเดียว (ข้อมูลเก็บในเบราว์เซอร์)
+      </p>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1">
+    <div class="max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-8">
+
+      <!-- Quiz Section -->
+      <section
+        id="quizSection"
+        class="bg-slate-900/70 border border-slate-700 rounded-2xl p-4 md:p-6 shadow-lg"
+      >
+        <h2 class="text-xl md:text-2xl font-semibold mb-2">
+          ทำแบบทดสอบเพื่อรับสิทธิ์สร้างเกียรติบัตร
+        </h2>
+        <p class="text-sm text-slate-300 mb-4">
+          ตอบแบบทดสอบวิชาเทคโนโลยีให้ได้มากกว่า
+          <span class="font-semibold text-primary">80%</span> เพื่อเปิดฟอร์มสร้างเกียรติบัตร
+        </p>
+
+        <form id="quizForm" class="space-y-5">
+          <!-- Q1 -->
+          <div class="bg-slate-800/60 rounded-xl p-4">
+            <p class="font-semibold mb-2">
+              1. หน่วยความจำใดใช้เก็บข้อมูลชั่วคราวระหว่างคอมพิวเตอร์ทำงาน?
+            </p>
+            <div class="space-y-1 text-sm">
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q1" value="a" class="accent-primary" />
+                <span>ROM</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q1" value="b" class="accent-primary" />
+                <span>RAM</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q1" value="c" class="accent-primary" />
+                <span>SSD</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="bg-slate-800/60 rounded-xl p-4">
+            <p class="font-semibold mb-2">
+              2. HTTP เป็นโปรโตคอลสำหรับการสื่อสารบนเครือข่ายใด?
+            </p>
+            <div class="space-y-1 text-sm">
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q2" value="a" class="accent-primary" />
+                <span>เครือข่ายท้องถิ่น (LAN) เท่านั้น</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q2" value="b" class="accent-primary" />
+                <span>อินเทอร์เน็ต</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q2" value="c" class="accent-primary" />
+                <span>เฉพาะมือถือ</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="bg-slate-800/60 rounded-xl p-4">
+            <p class="font-semibold mb-2">
+              3. ข้อใดคือระบบปฏิบัติการ (Operating System)?
+            </p>
+            <div class="space-y-1 text-sm">
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q3" value="a" class="accent-primary" />
+                <span>Microsoft Word</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q3" value="b" class="accent-primary" />
+                <span>Windows 11</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q3" value="c" class="accent-primary" />
+                <span>Google Chrome</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Q4 -->
+          <div class="bg-slate-800/60 rounded-xl p-4">
+            <p class="font-semibold mb-2">
+              4. เทคโนโลยี Cloud Computing ช่วยให้เราทำอะไรได้?
+            </p>
+            <div class="space-y-1 text-sm">
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q4" value="a" class="accent-primary" />
+                <span>เก็บและใช้งานทรัพยากรคอมพิวเตอร์ผ่านอินเทอร์เน็ต</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q4" value="b" class="accent-primary" />
+                <span>ต่อจอภาพเพิ่มเท่านั้น</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q4" value="c" class="accent-primary" />
+                <span>ใช้คอมพิวเตอร์ได้เฉพาะในห้องแลบ</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Q5 -->
+          <div class="bg-slate-800/60 rounded-xl p-4">
+            <p class="font-semibold mb-2">
+              5. ข้อใด “ไม่ใช่” อุปกรณ์นำเข้าข้อมูล (Input Device)?
+            </p>
+            <div class="space-y-1 text-sm">
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q5" value="a" class="accent-primary" />
+                <span>คีย์บอร์ด</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q5" value="b" class="accent-primary" />
+                <span>เมาส์</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="q5" value="c" class="accent-primary" />
+                <span>จอภาพ (Monitor)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mt-4">
+            <button
+              type="submit"
+              class="inline-flex justify-center items-center rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold hover:bg-red-500 transition shadow-md"
+            >
+              ส่งแบบทดสอบ
+            </button>
+            <div id="quizResult" class="text-sm text-slate-300"></div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Certificate Form (hidden until pass quiz) -->
+      <section
+        id="certFormSection"
+        class="bg-slate-900/70 border border-slate-700 rounded-2xl p-4 md:p-6 shadow-lg hidden"
+      >
+        <h2 class="text-xl md:text-2xl font-semibold mb-2">
+          ฟอร์มสร้างเกียรติบัตร
+        </h2>
+        <p class="text-sm text-slate-300 mb-4">
+          คุณผ่านเกณฑ์แล้ว! กรุณากรอกข้อมูลเพื่อสร้างเกียรติบัตร  
+          เกียรติบัตรจะใช้ข้อมูล <code>{ID}</code>, <code>{name}</code>, <code>{position}</code>
+        </p>
+
+        <form id="certForm" class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm mb-1">ID เกียรติบัตร (สร้างอัตโนมัติ)</label>
+            <input
+              id="certIdInput"
+              type="text"
+              class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+              placeholder="จะถูกกำหนดอัตโนมัติ เช่น 001"
+              readonly
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm mb-1">ชื่อผู้รับ (name)</label>
+            <input
+              id="nameInput"
+              type="text"
+              required
+              class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+              placeholder="ชื่อ-นามสกุล"
+            />
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm mb-1">ตำแหน่ง (position)</label>
+            <input
+              id="positionInput"
+              type="text"
+              required
+              class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+              placeholder="เช่น ผู้เข้าอบรม, ผู้ผ่านการอบรม, วิทยากร, ฯลฯ"
+            />
+          </div>
+
+          <div class="md:col-span-2 flex flex-wrap items-center justify-between gap-3 mt-2">
+            <button
+              type="submit"
+              class="inline-flex justify-center items-center rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold hover:bg-red-500 transition shadow-md"
+            >
+              บันทึกและสร้างเกียรติบัตร
+            </button>
+            <p id="certStatus" class="text-xs text-slate-300"></p>
+          </div>
+        </form>
+      </section>
+
+      <!-- Search Section -->
+      <section
+        id="searchSection"
+        class="bg-slate-900/70 border border-slate-700 rounded-2xl p-4 md:p-6 shadow-lg"
+      >
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div class="flex-1">
+            <h2 class="text-xl md:text-2xl font-semibold mb-2">
+              ค้นหาเกียรติบัตร
+            </h2>
+            <p class="text-sm text-slate-300">
+              ค้นหาด้วย <span class="font-semibold">ชื่อผู้รับ</span> หรือ
+              <span class="font-semibold">ID เกียรติบัตร</span>  
+              หากเว้นว่างแล้วกดค้นหา ระบบจะแสดงทั้งหมด (ข้อมูลจากเครื่องนี้)
+            </p>
+          </div>
+          <div class="w-full md:w-80 flex flex-col gap-2">
+            <input
+              id="searchInput"
+              type="text"
+              class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+              placeholder="พิมพ์ชื่อหรือ ID เกียรติบัตร..."
+            />
+            <div class="flex gap-2">
+              <button
+                id="searchBtn"
+                class="flex-1 rounded-xl bg-primary px-3 py-2 text-sm font-semibold hover:bg-red-500 transition"
+              >
+                ค้นหา
+              </button>
+              <button
+                id="clearBtn"
+                class="flex-1 rounded-xl bg-slate-700 px-3 py-2 text-sm hover:bg-slate-600 transition"
+              >
+                ล้างการค้นหา
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="searchResultMessage" class="text-sm text-slate-300 mt-4"></div>
+
+        <div
+          id="cardsContainer"
+          class="mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          <!-- การ์ดผลการค้นหาจะแทรกด้วย JS -->
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 bg-slate-950/90">
+    <div class="max-w-5xl mx-auto px-4 py-4 text-center text-xs md:text-sm text-slate-400">
+      © 2025 Copyright | พัฒนาโดย __________________
+    </div>
+  </footer>
+
+  <!-- Hidden canvas สำหรับวาดเกียรติบัตร -->
+  <canvas id="certCanvas" width="1280" height="720" class="hidden"></canvas>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // =========================
+    // STATE & STORAGE
+    // =========================
+    const STORAGE_KEY = "certificates_demo_v1";
+    let certificates = []; // {idNumber, idString, name, position, imageDataUrl}
+
+    // =========================
+    // DOM Elements
+    // =========================
+    const loadingOverlay = document.getElementById("loadingOverlay");
+    const quizForm = document.getElementById("quizForm");
+    const quizResultEl = document.getElementById("quizResult");
+    const certFormSection = document.getElementById("certFormSection");
+    const certForm = document.getElementById("certForm");
+    const certIdInput = document.getElementById("certIdInput");
+    const nameInput = document.getElementById("nameInput");
+    const positionInput = document.getElementById("positionInput");
+    const certStatusEl = document.getElementById("certStatus");
+
+    const searchInput = document.getElementById("searchInput");
+    const searchBtn = document.getElementById("searchBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const cardsContainer = document.getElementById("cardsContainer");
+    const searchResultMessage = document.getElementById("searchResultMessage");
+
+    const certCanvas = document.getElementById("certCanvas");
+    const ctx = certCanvas.getContext("2d");
+
+    // =========================
+    // Loading Overlay
+    // =========================
+    function showLoading() {
+      loadingOverlay.classList.remove("hidden");
+    }
+    function hideLoading() {
+      loadingOverlay.classList.add("hidden");
+    }
+
+    // =========================
+    // LocalStorage Helpers
+    // =========================
+    function loadFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        return JSON.parse(raw) || [];
+      } catch (err) {
+        console.error(err);
+        return [];
+      }
+    }
+
+    function saveToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(certificates));
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function getNextIdNumber() {
+      if (certificates.length === 0) return 1;
+      let maxId = 0;
+      certificates.forEach(c => {
+        if (c.idNumber > maxId) maxId = c.idNumber;
+      });
+      return maxId + 1;
+    }
+
+    function formatId(n) {
+      return String(n).padStart(3, "0");
+    }
+
+    // =========================
+    // Render Cards
+    // =========================
+    function renderCards(list) {
+      cardsContainer.innerHTML = "";
+
+      if (!list || list.length === 0) {
+        searchResultMessage.textContent = "ไม่พบข้อมูลที่ค้นหา";
+        return;
+      }
+
+      searchResultMessage.textContent = `พบทั้งหมด ${list.length} รายการ`;
+
+      list.forEach(item => {
+        const card = document.createElement("div");
+        card.className =
+          "bg-slate-800/80 border border-slate-700 rounded-2xl p-4 flex flex-col justify-between shadow-md";
+
+        card.innerHTML = `
+          <div class="space-y-1 text-sm">
+            <p><span class="font-semibold text-slate-200">ID เกียรติบัตร:</span> ${item.idString}</p>
+            <p><span class="font-semibold text-slate-200">ชื่อผู้รับ:</span> ${item.name}</p>
+            <p><span class="font-semibold text-slate-200">ตำแหน่ง:</span> ${item.position}</p>
+          </div>
+          <div class="mt-3">
+            <button
+              class="w-full rounded-xl bg-primary px-3 py-2 text-xs font-semibold hover:bg-red-500 transition"
+            >
+              ดูเอกสารเพื่อดาวน์โหลด
+            </button>
+          </div>
+        `;
+
+        const btn = card.querySelector("button");
+        btn.addEventListener("click", () => {
+          if (!item.imageDataUrl) {
+            Swal.fire({
+              icon: "error",
+              title: "ไม่พบภาพเกียรติบัตร",
+              text: "ข้อมูลนี้ไม่มีรูปภาพเกียรติบัตรในระบบ",
+            });
+            return;
+          }
+
+          // เปิดในแท็บใหม่
+          window.open(item.imageDataUrl, "_blank");
+
+          // แสดงใน SweetAlert
+          Swal.fire({
+            title: "ตัวอย่างเกียรติบัตร",
+            html: `
+              <p class="text-xs mb-2">ระบบจะเปิดรูปเกียรติบัตรในแท็บใหม่ด้วย</p>
+              <img src="${item.imageDataUrl}" alt="Certificate" class="w-full rounded-xl border border-slate-700" />
+            `,
+            width: "700px",
+            confirmButtonText: "ปิด",
+            customClass: {
+              popup: "bg-slate-900 text-slate-100",
+              confirmButton: "bg-primary hover:bg-red-500",
+            },
+          });
+        });
+
+        cardsContainer.appendChild(card);
+      });
+    }
+
+    // =========================
+    // Certificate Drawing
+    // =========================
+    function drawCertificate(idString, name, position) {
+      const w = certCanvas.width;
+      const h = certCanvas.height;
+
+      // พื้นหลัง gradient
+      const grad = ctx.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0, "#0f172a");
+      grad.addColorStop(0.5, "#ef4444");
+      grad.addColorStop(1, "#111827");
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // กรอบ
+      ctx.strokeStyle = "#fbbf24";
+      ctx.lineWidth = 8;
+      ctx.strokeRect(40, 40, w - 80, h - 80);
+
+      // เส้นกรอบด้านใน
+      ctx.strokeStyle = "rgba(248,250,252,0.4)";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(70, 70, w - 140, h - 140);
+
+      // หัวข้อ
+      ctx.fillStyle = "#f9fafb";
+      ctx.textAlign = "center";
+
+      ctx.font = "bold 52px Sarabun";
+      ctx.fillText("เกียรติบัตร", w / 2, 150);
+
+      ctx.font = "bold 32px Sarabun";
+      ctx.fillText("ประกาศนียบัตรยืนยันการเข้าร่วมกิจกรรม", w / 2, 210);
+
+      // ชื่อ
+      ctx.font = "bold 46px Sarabun";
+      ctx.fillText(name, w / 2, 320);
+
+      // ตำแหน่ง
+      ctx.font = "30px Sarabun";
+      ctx.fillText(`ตำแหน่ง: ${position}`, w / 2, 380);
+
+      // ID
+      ctx.font = "24px Sarabun";
+      ctx.fillText(`ID: ${idString}`, w / 2, 430);
+
+      // ข้อความท้าย
+      ctx.font = "22px Sarabun";
+      ctx.fillText(
+        "ขอรับรองว่าบุคคลดังกล่าวได้ผ่านเกณฑ์ตามที่กำหนด",
+        w / 2,
+        490
+      );
+
+      // เส้นเซ็นชื่อ
+      ctx.beginPath();
+      ctx.moveTo(w / 2 - 200, 560);
+      ctx.lineTo(w / 2 + 200, 560);
+      ctx.strokeStyle = "rgba(249,250,251,0.8)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.font = "20px Sarabun";
+      ctx.fillText("ผู้รับรอง", w / 2, 595);
+    }
+
+    function generateCertificateImage(idString, name, position) {
+      drawCertificate(idString, name, position);
+      return certCanvas.toDataURL("image/png");
+    }
+
+    // =========================
+    // Quiz Logic
+    // =========================
+    const correctAnswers = {
+      q1: "b",
+      q2: "b",
+      q3: "b",
+      q4: "a",
+      q5: "c",
+    };
+
+    quizForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      let score = 0;
+      const total = 5;
+
+      Object.keys(correctAnswers).forEach((qKey) => {
+        const selected = quizForm.querySelector(
+          `input[name="${qKey}"]:checked`
+        );
+        if (selected && selected.value === correctAnswers[qKey]) {
+          score++;
+        }
+      });
+
+      const percent = (score / total) * 100;
+      const percentText = percent.toFixed(0);
+      quizResultEl.textContent = `คุณได้ ${score}/${total} คะแนน (${percentText}%)`;
+
+      if (percent >= 80) {
+        certFormSection.classList.remove("hidden");
+        Swal.fire({
+          icon: "success",
+          title: "ผ่านเกณฑ์แล้ว!",
+          text: "คุณสามารถกรอกฟอร์มเพื่อสร้างเกียรติบัตรได้",
+        });
+
+        const nextId = getNextIdNumber();
+        certIdInput.value = formatId(nextId);
+      } else {
+        certFormSection.classList.add("hidden");
+        Swal.fire({
+          icon: "warning",
+          title: "ยังไม่ผ่านเกณฑ์",
+          text: "คุณต้องได้มากกว่า 80% ลองทำแบบทดสอบใหม่อีกครั้งนะ",
+        });
+      }
+    });
+
+    // =========================
+    // Certificate Form Submit
+    // =========================
+    certForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const name = nameInput.value.trim();
+      const position = positionInput.value.trim();
+
+      if (!name || !position) {
+        Swal.fire({
+          icon: "warning",
+          title: "กรอกข้อมูลไม่ครบ",
+          text: "กรุณากรอกชื่อและตำแหน่งให้ครบ",
+        });
+        return;
+      }
+
+      const idNumber = getNextIdNumber();
+      const idString = formatId(idNumber);
+
+      certStatusEl.textContent = "กำลังสร้างเกียรติบัตร...";
+      showLoading();
+
+      setTimeout(() => {
+        // สร้างรูป
+        const imageDataUrl = generateCertificateImage(idString, name, position);
+
+        // บันทึกลง state + localStorage
+        const cert = {
+          idNumber,
+          idString,
+          name,
+          position,
+          imageDataUrl,
+        };
+        certificates.push(cert);
+        saveToStorage();
+        renderCards(certificates);
+
+        certStatusEl.textContent = "สร้างเกียรติบัตรสำเร็จ!";
+        certForm.reset();
+
+        // อัปเดต ID ถัดไปในช่อง
+        const nextId = getNextIdNumber();
+        certIdInput.value = formatId(nextId);
+
+        hideLoading();
+
+        Swal.fire({
+          icon: "success",
+          title: "สร้างเกียรติบัตรสำเร็จ",
+          text: "คุณสามารถค้นหาและเปิดดู/ดาวน์โหลดได้จากด้านล่าง",
+        });
+      }, 400); // หน่วงนิดนึงให้เห็น loading
+    });
+
+    // =========================
+    // Search Logic
+    // =========================
+    function filterCertificates(keyword) {
+      keyword = keyword.trim().toLowerCase();
+      if (!keyword) return certificates;
+
+      return certificates.filter((item) => {
+        const idStr = (item.idString || "").toLowerCase();
+        const name = (item.name || "").toLowerCase();
+        return idStr.includes(keyword) || name.includes(keyword);
+      });
+    }
+
+    searchBtn.addEventListener("click", () => {
+      const keyword = searchInput.value;
+      const list = filterCertificates(keyword);
+      renderCards(list);
+    });
+
+    clearBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      renderCards(certificates);
+      searchResultMessage.textContent = "";
+    });
+
+    // =========================
+    // Initial Load
+    // =========================
+    window.addEventListener("DOMContentLoaded", () => {
+      showLoading();
+      certificates = loadFromStorage();
+      renderCards(certificates);
+
+      // เตรียม ID ในฟอร์ม (เผื่อผ่านแบบทดสอบ)
+      const nextId = getNextIdNumber();
+      certIdInput.value = formatId(nextId);
+
+      hideLoading();
+    });
+  </script>
+</body>
+</html>
