@@ -4,9 +4,13 @@
   <meta charset="UTF-8" />
   <title>ระบบเกียรติบัตร Valorant E-sport</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- ฟอนต์ -->
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
     body { font-family: 'Sarabun', sans-serif; }
   </style>
@@ -17,10 +21,10 @@
   <header class="bg-gradient-to-r from-red-600 to-red-700 shadow-lg">
     <div class="max-w-5xl mx-auto px-4 py-6">
       <h1 class="text-2xl md:text-3xl font-bold tracking-wide">
-        ระบบสร้าง / ดาวน์โหลดเกียรติบัตร Valorant E-sport
+        ระบบสร้างเกียรติบัตร Valorant E-sport
       </h1>
       <p class="text-sm md:text-base text-slate-100/90 mt-2">
-        กรอกชื่อและเลือกตำแหน่ง ระบบจะสร้างใบเกียรติบัตร Valorant ให้อัตโนมัติ
+        ตอบแบบประเมินสั้น ๆ แล้วรับเกียรติบัตร Valorant E-sport จากเทมเพลตตัวอย่างได้ทันที
       </p>
     </div>
   </header>
@@ -29,72 +33,124 @@
   <main class="flex-1">
     <div class="max-w-5xl mx-auto px-4 py-8 space-y-8">
 
-      <!-- ฟอร์มสร้างเกียรติบัตร -->
+      <!-- ฟอร์มสร้างเกียรติบัตร + แบบประเมิน -->
       <section class="bg-slate-900/70 border border-slate-700 rounded-2xl p-6 shadow-lg">
-        <h2 class="text-xl md:text-2xl font-semibold mb-2">สร้างเกียรติบัตร</h2>
-        <form id="certForm" class="grid md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm mb-1">ID (อัตโนมัติ)</label>
-            <input id="certIdInput" readonly
-                   class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" />
+        <h2 class="text-xl md:text-2xl font-semibold mb-4">แบบฟอร์มรับเกียรติบัตร</h2>
+
+        <form id="certForm" class="space-y-6">
+
+          <!-- ข้อมูลผู้รับ -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm mb-1">ID (อัตโนมัติ)</label>
+              <input id="certIdInput" readonly
+                     class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label class="block text-sm mb-1">ชื่อผู้รับ</label>
+              <input id="nameInput" required placeholder="ชื่อ-นามสกุล"
+                     class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm mb-1">ตำแหน่ง</label>
+              <select id="positionSelect" required
+                      class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm">
+                <option value="">-- เลือกตำแหน่ง --</option>
+                <option>Match Official</option>
+                <option>Coach</option>
+                <option>Tournament Organizer</option>
+                <option>Tournament Director</option>
+                <option>Broadcast Team</option>
+                <option>Host</option>
+                <option>Caster</option>
+                <option>Staff</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label class="block text-sm mb-1">ชื่อผู้รับ</label>
-            <input id="nameInput" required placeholder="ชื่อ-นามสกุล"
-                   class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" />
+
+          <!-- แบบประเมิน -->
+          <div class="border-t border-slate-700 pt-4 space-y-4">
+            <h3 class="text-lg font-semibold">แบบประเมินโครงการ</h3>
+
+            <div>
+              <label class="block text-sm mb-1">
+                รู้สึกอย่างไรบ้างกับโครงการที่จัดขึ้น
+              </label>
+              <textarea id="feelingInput" required rows="3"
+                        class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                        placeholder="พิมพ์ความรู้สึก / ความประทับใจของคุณ..."></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm mb-1">
+                เต็ม 10 ให้คะแนนเท่าไหร่
+              </label>
+              <input id="scoreInput" type="number" min="0" max="10" step="1" required
+                     class="w-32 rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                     placeholder="0 - 10" />
+              <span class="text-xs text-slate-400 ml-2">(กรอกเป็นตัวเลข 0 - 10)</span>
+            </div>
+
+            <div>
+              <label class="block text-sm mb-1">
+                ข้อเสนอแนะสำหรับงานที่จัด
+              </label>
+              <textarea id="suggestionInput" required rows="3"
+                        class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                        placeholder="ข้อเสนอแนะเพื่อพัฒนางานครั้งถัดไป..."></textarea>
+            </div>
           </div>
-          <div class="md:col-span-2">
-            <label class="block text-sm mb-1">ตำแหน่ง</label>
-            <select id="positionSelect" required
-                    class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm">
-              <option value="">-- เลือกตำแหน่ง --</option>
-              <option>Match Official</option>
-              <option>Coach</option>
-              <option>Tournament Organizer</option>
-              <option>Tournament Director</option>
-              <option>Broadcast Team</option>
-              <option>Host</option>
-              <option>Caster</option>
-              <option>Staff</option>
-            </select>
-          </div>
-          <div class="md:col-span-2 flex justify-between items-center mt-3">
+
+          <div class="flex justify-between items-center pt-2">
             <button type="submit"
                     class="rounded-xl bg-red-600 px-6 py-2.5 text-sm font-semibold hover:bg-red-500 transition">
-              สร้างเกียรติบัตร
+              ส่งแบบประเมินและสร้างเกียรติบัตร
             </button>
             <p id="certStatus" class="text-xs text-slate-300"></p>
           </div>
         </form>
       </section>
 
-      <!-- ค้นหา -->
-      <section class="bg-slate-900/70 border border-slate-700 rounded-2xl p-6 shadow-lg">
-        <h2 class="text-xl font-semibold mb-3">ค้นหาเกียรติบัตร</h2>
-        <input id="searchInput" placeholder="ค้นหาชื่อหรือ ID..."
-               class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm mb-3" />
-        <div id="cardsContainer" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
-      </section>
+      <!-- ไม่มีส่วนค้นหาอีกต่อไป -->
 
     </div>
   </main>
 
+  <!-- Footer -->
   <footer class="border-t border-slate-800 text-center text-slate-400 py-3 text-xs">
     © 2025 Valorant E-sport Certificate System
   </footer>
 
+  <!-- Canvas: A4 แนวนอน 29.7 x 21 cm @300dpi = 3508 x 2480 -->
   <canvas id="certCanvas" width="3508" height="2480" class="hidden"></canvas>
 
   <script>
-    const TEMPLATE_SRC = "img/certificate-template.png";
+    // ---------- เทมเพลตเกียรติบัตร ----------
+    const TEMPLATE_SRC = "img/certificate-template.png"; // รูปต้นแบบ
     const templateImg = new Image();
     let templateLoaded = false;
     templateImg.onload = () => templateLoaded = true;
+    templateImg.onerror = () => {
+      console.error("โหลดรูปเทมเพลตไม่สำเร็จ:", TEMPLATE_SRC);
+      templateLoaded = false;
+    };
     templateImg.src = TEMPLATE_SRC;
 
-    const STORAGE_KEY = "valorant_certs_meta";
-    let certificates = [];
+    // ---------- เกี่ยวกับ ID ----------
+    const ID_STORAGE_KEY = "valorant_last_id";
+    function loadLastId() {
+      const raw = localStorage.getItem(ID_STORAGE_KEY);
+      const n = parseInt(raw, 10);
+      return isNaN(n) ? 0 : n;
+    }
+    function saveLastId(n) {
+      localStorage.setItem(ID_STORAGE_KEY, String(n));
+    }
+    function fmtId(n) {
+      return String(n).padStart(3, "0");
+    }
 
+    // ---------- DOM ----------
     const certCanvas = document.getElementById("certCanvas");
     const ctx = certCanvas.getContext("2d");
 
@@ -102,84 +158,50 @@
     const certIdInput = document.getElementById("certIdInput");
     const nameInput = document.getElementById("nameInput");
     const positionSelect = document.getElementById("positionSelect");
+    const feelingInput = document.getElementById("feelingInput");
+    const scoreInput = document.getElementById("scoreInput");
+    const suggestionInput = document.getElementById("suggestionInput");
     const certStatus = document.getElementById("certStatus");
-    const searchInput = document.getElementById("searchInput");
-    const cardsContainer = document.getElementById("cardsContainer");
 
-    function loadStorage() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch {
-        return [];
-      }
-    }
+    let lastIdNumber = loadLastId();
 
-    function saveStorage() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(certificates));
-    }
-
-    function getNextId() {
-      return certificates.length ? Math.max(...certificates.map(c => c.idNumber)) + 1 : 1;
-    }
-
-    function fmtId(n) {
-      return String(n).padStart(3, "0");
-    }
-
-    function renderCards(list) {
-      cardsContainer.innerHTML = "";
-      if (!list.length) {
-        cardsContainer.innerHTML = `<p class="text-sm text-slate-300 col-span-full">ไม่พบข้อมูล</p>`;
-        return;
-      }
-      list.forEach(c => {
-        const card = document.createElement("div");
-        card.className = "bg-slate-800/80 border border-slate-700 rounded-xl p-4";
-        card.innerHTML = `
-          <p class="text-sm font-semibold">ID: ${c.idString}</p>
-          <p class="text-sm">ชื่อ: ${c.name}</p>
-          <p class="text-sm mb-2">ตำแหน่ง: ${c.position}</p>
-          <button class="w-full bg-red-600 hover:bg-red-500 text-xs py-1 rounded">
-            ดู / ดาวน์โหลด
-          </button>
-        `;
-        card.querySelector("button").onclick = () => showCertFromRecord(c);
-        cardsContainer.appendChild(card);
-      });
-    }
-
-    function drawCertificate(id, name, pos) {
+    // ---------- วาดใบเกียรติบัตร ----------
+    function drawCertificate(id, name, position) {
       const w = certCanvas.width, h = certCanvas.height;
       ctx.clearRect(0, 0, w, h);
-      if (templateLoaded) ctx.drawImage(templateImg, 0, 0, w, h);
-      else { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h); }
+
+      if (templateLoaded) {
+        ctx.drawImage(templateImg, 0, 0, w, h);
+      } else {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, w, h);
+      }
 
       ctx.textAlign = "center";
       ctx.fillStyle = "#000";
 
-      // แสดงชื่อ + ตำแหน่งในวงเล็บ เช่น “Aniwat ( Staff )”
+      // ชื่อ + ตำแหน่งในวงเล็บ เช่น “Aniwat ( Staff )”
       ctx.font = "bold 100px 'Times New Roman', serif";
-      ctx.fillText(`${name} ( ${pos} )`, w / 2, 1310);
+      ctx.fillText(`${name} ( ${position} )`, w / 2, 1310);
 
+      // ID มุมขวาบน
       ctx.textAlign = "right";
       ctx.font = "36px 'Sarabun', sans-serif";
       ctx.fillStyle = "#555";
       ctx.fillText("ID: " + id, w - 200, 250);
     }
 
-    function genCertImg(id, name, pos) {
-      drawCertificate(id, name, pos);
+    function generateCertificateImage(id, name, position) {
+      drawCertificate(id, name, position);
       return certCanvas.toDataURL("image/png");
     }
 
-    function showCertFromRecord(record) {
-      const imgUrl = genCertImg(record.idString, record.name, record.position);
+    function showCertificateModal(imgUrl, id) {
       Swal.fire({
         title: "ตัวอย่างเกียรติบัตร",
         html: `
           <img src="${imgUrl}" class="w-full rounded mb-3" />
-          <a href="${imgUrl}" download="Certificate_${record.idString}.png"
+          <a href="${imgUrl}" download="Certificate_${id}.png"
              class="inline-block bg-red-600 hover:bg-red-500 text-xs px-3 py-1 rounded text-white">
              ดาวน์โหลด PNG
           </a>
@@ -192,39 +214,72 @@
       });
     }
 
-    certForm.onsubmit = e => {
+    // ---------- Submit ฟอร์ม ----------
+    certForm.addEventListener("submit", (e) => {
       e.preventDefault();
+
       const name = nameInput.value.trim();
-      const pos = positionSelect.value.trim();
-      if (!name || !pos) return Swal.fire("กรุณากรอกชื่อและเลือกตำแหน่ง");
-      if (!templateLoaded) return Swal.fire("รูปเทมเพลตยังโหลดไม่เสร็จ");
+      const position = positionSelect.value.trim();
+      const feeling = feelingInput.value.trim();
+      const scoreStr = scoreInput.value.trim();
+      const suggestion = suggestionInput.value.trim();
 
-      const idNum = getNextId();
-      const idStr = fmtId(idNum);
+      if (!name || !position || !feeling || !scoreStr || !suggestion) {
+        Swal.fire({
+          icon: "warning",
+          title: "กรุณากรอกข้อมูลให้ครบ",
+          text: "ต้องกรอกชื่อ, ตำแหน่ง และตอบคำถามทั้ง 3 ข้อก่อนสร้างเกียรติบัตร",
+        });
+        return;
+      }
 
-      const record = { idNumber: idNum, idString: idStr, name, position: pos };
-      certificates.push(record);
-      saveStorage();
-      renderCards(certificates);
-      certForm.reset();
-      certIdInput.value = fmtId(getNextId());
-      certStatus.textContent = "สร้างสำเร็จ!";
-      showCertFromRecord(record);
-    };
+      const scoreNum = Number(scoreStr);
+      if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 10) {
+        Swal.fire({
+          icon: "warning",
+          title: "คะแนนไม่ถูกต้อง",
+          text: "กรุณากรอกคะแนนเป็นตัวเลขระหว่าง 0 ถึง 10",
+        });
+        return;
+      }
 
-    searchInput.oninput = () => {
-      const kw = searchInput.value.toLowerCase();
-      const list = kw
-        ? certificates.filter(c => c.name.toLowerCase().includes(kw) || c.idString.includes(kw))
-        : certificates;
-      renderCards(list);
-    };
+      if (!templateLoaded) {
+        Swal.fire({
+          icon: "error",
+          title: "รูปเทมเพลตยังโหลดไม่เสร็จ",
+          text: "ลองโหลดหน้าใหม่แล้วลองอีกครั้ง",
+        });
+        return;
+      }
 
-    window.onload = () => {
-      certificates = loadStorage();
-      renderCards(certificates);
-      certIdInput.value = fmtId(getNextId());
-    };
+      const idNumber = lastIdNumber + 1;
+      const idString = fmtId(idNumber);
+
+      certStatus.textContent = "กำลังสร้างเกียรติบัตร...";
+
+      setTimeout(() => {
+        const imgUrl = generateCertificateImage(idString, name, position);
+
+        // อัปเดต ID ล่าสุด
+        lastIdNumber = idNumber;
+        saveLastId(lastIdNumber);
+        certIdInput.value = fmtId(lastIdNumber + 1);
+
+        certStatus.textContent = "สร้างเกียรติบัตรสำเร็จ!";
+
+        // เคลียร์เฉพาะคำถาม (จะได้ใช้ชื่อ/ตำแหน่งเดิมซ้ำง่าย)
+        feelingInput.value = "";
+        scoreInput.value = "";
+        suggestionInput.value = "";
+
+        showCertificateModal(imgUrl, idString);
+      }, 150);
+    });
+
+    // ---------- Initial load ----------
+    window.addEventListener("load", () => {
+      certIdInput.value = fmtId(lastIdNumber + 1);
+    });
   </script>
 </body>
 </html>
