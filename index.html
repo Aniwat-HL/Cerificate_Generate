@@ -60,7 +60,7 @@
         ระบบ สร้าง/ค้นหา/ดาวน์โหลด เกียรติบัตร Valorant E-sport
       </h1>
       <p class="text-sm md:text-base text-slate-100/90 mt-2">
-        กรอกข้อมูลผู้เล่น Valorant แล้วรับเกียรติบัตรออนไลน์ทันที – ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้
+        กรอกข้อมูลผู้เล่น Valorant แล้วรับเกียรติบัตรออนไลน์ธีม E-sport ขาว-แดง พร้อมลายเซ็นผู้อำนวยการ Nattasan ได้ทันที (ข้อมูลเก็บในเบราว์เซอร์)
       </p>
     </div>
   </header>
@@ -79,7 +79,7 @@
         </h2>
         <p class="text-sm text-slate-300 mb-4">
           กรอกข้อมูลให้ครบ ระบบจะสร้างเกียรติบัตรธีม E-sport (ขาว-แดง) พร้อมลายเซ็น
-          <span class="font-semibold text-primary">ผู้อำนวยการ Nattasan</span> ให้โดยอัตโนมัติ
+          <span class="font-semibold text-primary">EVENT DIRECTOR : Nattasan</span> ให้โดยอัตโนมัติ
         </p>
 
         <form id="certForm" class="grid md:grid-cols-2 gap-4">
@@ -192,6 +192,42 @@
 
   <!-- JavaScript Logic -->
   <script>
+    // =========================
+    // LOGO CONFIG (เปลี่ยน path ให้ตรงกับไฟล์ของคุณ)
+    // =========================
+    // เช่น วางในโฟลเดอร์ img/ ก็แก้เป็น "img/xxxx.png"
+    const LOGO_PROJECT_V_SRC = "project-v-logo.png";   // โลโก้ Project V / Tournament
+    const LOGO_PSU_SRC       = "psu-logo.png";         // โลโก้ PSU
+    const LOGO_VALORANT_SRC  = "valorant-logo.png";    // โลโก้ Valorant
+
+    const logoProjectV = new Image();
+    const logoPSU = new Image();
+    const logoValorant = new Image();
+
+    let logosLoaded = false;
+    let logoLoadedCount = 0;
+
+    function onLogoLoaded() {
+      logoLoadedCount++;
+      if (logoLoadedCount >= 3) {
+        logosLoaded = true;
+        console.log("All logos loaded");
+      }
+    }
+
+    logoProjectV.onload = onLogoLoaded;
+    logoPSU.onload = onLogoLoaded;
+    logoValorant.onload = onLogoLoaded;
+
+    // ถ้าโหลดไม่ได้ก็ถือว่า loaded เพื่อให้วาดแบบไม่มีรูปโลโก้ได้
+    logoProjectV.onerror = onLogoLoaded;
+    logoPSU.onerror = onLogoLoaded;
+    logoValorant.onerror = onLogoLoaded;
+
+    logoProjectV.src = LOGO_PROJECT_V_SRC;
+    logoPSU.src = LOGO_PSU_SRC;
+    logoValorant.src = LOGO_VALORANT_SRC;
+
     // =========================
     // STATE & STORAGE
     // =========================
@@ -306,7 +342,7 @@
             return;
           }
 
-          // เปิดในแท็บใหม่ (ผู้ใช้คลิกเซฟได้)
+          // เปิดในแท็บใหม่
           window.open(item.imageDataUrl, "_blank");
 
           // แสดงใน SweetAlert พร้อมปุ่มดาวน์โหลด
@@ -336,7 +372,7 @@
     }
 
     // =========================
-    // Draw Esport Certificate (White/Red Valorant Style)
+    // Draw Esport Certificate (White/Red พร้อมโลโก้)
     // =========================
     function drawEsportCertificate(idString, name, position) {
       const w = certCanvas.width;
@@ -346,7 +382,7 @@
       ctx.fillStyle = "#f9fafb";
       ctx.fillRect(0, 0, w, h);
 
-      // ลายพื้นหลังเป็น shape ทแยง
+      // ลายพื้นหลังทแยง
       ctx.save();
       ctx.globalAlpha = 0.12;
       ctx.fillStyle = "#e5e7eb";
@@ -357,12 +393,12 @@
       }
       ctx.restore();
 
-      // เส้นกรอบสีดำ
+      // เส้นกรอบ
       ctx.strokeStyle = "#111827";
       ctx.lineWidth = 6;
       ctx.strokeRect(60, 60, w - 120, h - 120);
 
-      // มุมกรอบบนซ้ายแบบลาย esports
+      // มุมกรอบบนซ้ายแนว esports
       ctx.save();
       ctx.strokeStyle = "#111827";
       ctx.lineWidth = 8;
@@ -393,7 +429,6 @@
       ctx.lineTo(w - 260, 80);
       ctx.closePath();
       ctx.fill();
-
       ctx.globalAlpha = 1;
       ctx.restore();
 
@@ -416,7 +451,7 @@
       ctx.fill();
       ctx.restore();
 
-      // จุดขาว ๆ แนว E-sport ด้านล่างซ้าย
+      // จุดขาวแนว E-sport
       ctx.save();
       ctx.fillStyle = "#f9fafb";
       for (let i = 0; i < 4; i++) {
@@ -425,7 +460,7 @@
       }
       ctx.restore();
 
-      // ข้อความหัว Certificate
+      // หัว CERTIFICATE
       ctx.fillStyle = "#111827";
       ctx.textAlign = "center";
 
@@ -467,7 +502,7 @@
       ctx.font = "24px Sarabun";
       ctx.fillText("Position: " + position, w / 2, 520);
 
-      // วันที่ (วันนี้)
+      // วันที่วันนี้
       const now = new Date();
       const dateStr = now.toLocaleDateString("en-US", {
         year: "numeric",
@@ -476,11 +511,10 @@
       });
       ctx.fillText(dateStr, w / 2, 560);
 
-      // ลายเซ็นและชื่อผู้อำนวยการ Nattasan
+      // ลายเซ็นผู้อำนวยการ Nattasan
       ctx.textAlign = "center";
       const baseY = 720;
 
-      // เส้นเซ็น
       ctx.beginPath();
       ctx.moveTo(w / 2 - 200, baseY);
       ctx.lineTo(w / 2 + 200, baseY);
@@ -488,7 +522,6 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // ลายเซ็น (เขียนเล่น ๆ)
       ctx.font = "italic 32px Sarabun";
       ctx.fillStyle = "#111827";
       ctx.fillText("Nattasan", w / 2, baseY - 15);
@@ -496,14 +529,61 @@
       ctx.font = "20px Sarabun";
       ctx.fillText("EVENT DIRECTOR", w / 2, baseY + 35);
 
-      // มุมโลโก้ E-sport (placeholder ข้อความ)
-      ctx.textAlign = "left";
-      ctx.font = "bold 22px Sarabun";
+      // พื้นหลังสำหรับโลโก้ด้านล่าง
+      ctx.save();
+      ctx.globalAlpha = 0.92;
       ctx.fillStyle = "#111827";
-      ctx.fillText("PROJECT V", 120, h - 70);
+      ctx.fillRect(120, h - 150, 380, 90);       // แถบซ้าย
+      ctx.fillRect(w - 500, h - 150, 380, 90);   // แถบขวา
+      ctx.restore();
 
-      ctx.textAlign = "right";
-      ctx.fillText("VALORANT E-SPORT", w - 120, h - 70);
+      // โลโก้
+      if (logosLoaded) {
+        const logoHeight = 60;
+
+        // Project V
+        const pvRatio = logoProjectV.width / logoProjectV.height || 2;
+        const pvWidth = logoHeight * pvRatio;
+        ctx.drawImage(
+          logoProjectV,
+          140,
+          h - 140,
+          pvWidth,
+          logoHeight
+        );
+
+        // PSU
+        const psuRatio = logoPSU.width / logoPSU.height || 2;
+        const psuWidth = logoHeight * psuRatio;
+        ctx.drawImage(
+          logoPSU,
+          160 + pvWidth,
+          h - 140,
+          psuWidth,
+          logoHeight
+        );
+
+        // Valorant (ฝั่งขวา)
+        const vRatio = logoValorant.width / logoValorant.height || 2;
+        const vWidth = logoHeight * vRatio;
+        const rightBlockX = w - 500;
+        ctx.drawImage(
+          logoValorant,
+          rightBlockX + 60,
+          h - 140,
+          vWidth,
+          logoHeight
+        );
+      } else {
+        // fallback เป็นข้อความ
+        ctx.textAlign = "left";
+        ctx.font = "bold 22px Sarabun";
+        ctx.fillStyle = "#f9fafb";
+        ctx.fillText("PROJECT V  |  PSU", 140, h - 95);
+
+        ctx.textAlign = "right";
+        ctx.fillText("VALORANT", w - 140, h - 95);
+      }
 
       // แสดง ID มุมขวาบน
       ctx.textAlign = "right";
@@ -541,7 +621,6 @@
       certStatusEl.textContent = "กำลังสร้างเกียรติบัตร...";
       showLoading();
 
-      // ใส่ setTimeout เล็กน้อยให้เห็น overlay
       setTimeout(() => {
         const imageDataUrl = generateCertificateImage(idString, name, position);
 
@@ -564,7 +643,6 @@
 
         hideLoading();
 
-        // Popup พร้อมปุ่มดาวน์โหลดทันที
         Swal.fire({
           title: "สร้างเกียรติบัตรสำเร็จ",
           html: `
