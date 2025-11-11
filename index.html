@@ -24,7 +24,7 @@
         ระบบสร้าง / ดาวน์โหลดเกียรติบัตร Valorant E-sport
       </h1>
       <p class="text-sm md:text-base text-slate-100/90 mt-2">
-        กรอกชื่อและตำแหน่ง แล้วระบบจะใส่ลงบนเทมเพลตเกียรติบัตร Valorant ให้อัตโนมัติ (เก็บข้อมูลในเครื่องด้วย localStorage)
+        กรอกชื่อและตำแหน่ง แล้วระบบจะใส่ลงบนเทมเพลตเกียรติบัตร Valorant ให้อัตโนมัติ (เก็บข้อมูลเฉพาะ ID / ชื่อ / ตำแหน่ง ในเครื่อง)
       </p>
     </div>
   </header>
@@ -94,8 +94,8 @@
     templateImg.src = TEMPLATE_SRC;
 
     // ------------ STATE & DOM -------------
-    const STORAGE_KEY = "valorant_certs";
-    let certificates = [];
+    const STORAGE_KEY = "valorant_certs_meta";   // เก็บเฉพาะ metadata
+    let certificates = [];                       // { idNumber, idString, name, position }
 
     const certCanvas = document.getElementById("certCanvas");
     const ctx = certCanvas.getContext("2d");
@@ -110,12 +110,36 @@
 
     // ------------ LocalStorage helpers -------------
     function loadStorage() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        console.error("loadStorage error", e);
+        return [];
+      }
     }
+
     function saveStorage() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(certificates));
+      try {
+        // เก็บเฉพาะ fields ที่จำเป็น ไม่เก็บรูป
+        const slim = certificates.map(c => ({
+          idNumber: c.idNumber,
+          idString: c.idString,
+          name: c.name,
+          position: c.position
+        }));
+        localStorage.removeItem(STORAGE_KEY); // เคลียร์ของเก่าให้กินเนื้อที่น้อยสุด
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(slim));
+      } catch (e) {
+        console.error("saveStorage error", e);
+        Swal.fire({
+          icon: "warning",
+          title: "พื้นที่จัดเก็บเต็ม",
+          text: "ไม่สามารถบันทึกข้อมูลเพิ่มได้ กรุณาลบ localStorage ของเว็บนี้หรือลบรายการเก่า ๆ",
+        });
+      }
     }
+
     function getNextId() {
       return certificates.length ? Math.max(...certificates.map(c => c.idNumber)) + 1 : 1;
     }
@@ -141,27 +165,8 @@
             ดู / ดาวน์โหลด
           </button>
         `;
-        card.querySelector("button").onclick = () => showCert(c.imageDataUrl, c.idString);
+        card.querySelector("button").onclick = () => showCertFromRecord(c);
         cardsContainer.appendChild(card);
-      });
-    }
-
-    // ให้เรียกได้จากทุกที่
-    function showCert(url, id) {
-      Swal.fire({
-        title: "ตัวอย่างเกียรติบัตร",
-        html: `
-          <img src="${url}" class="w-full rounded mb-3" />
-          <a href="${url}" download="Certificate_${id}.png"
-             class="inline-block bg-red-600 hover:bg-red-500 text-xs px-3 py-1 rounded text-white">
-             ดาวน์โหลด PNG
-          </a>
-        `,
-        showConfirmButton: false,
-        showCloseButton: true,
-        width: "720px",
-        background: "#020617",
-        color: "#e5e7eb"
       });
     }
 
@@ -181,15 +186,15 @@
       ctx.textAlign = "center";
       ctx.fillStyle = "#000";
 
-      // ✅ ชื่อ – ขยับลงมา (y = 1310)
+      // ✅ ชื่อ – ขยับลงมา (1310)
       ctx.font = "bold 100px 'Times New Roman', serif";
       ctx.fillText(name, w / 2, 1310);
 
-      // ✅ ตำแหน่ง – ขยับลงตาม (y = 1390)
+      // ✅ ตำแหน่ง – ขยับตาม (1390)
       ctx.font = "46px 'Times New Roman', serif";
       ctx.fillText(pos, w / 2, 1390);
 
-      // ❌ ไม่เขียนวันที่ (ใช้วันที่ในภาพ)
+      // ❌ ไม่เขียนวันที่ (ใช้ในรูปเดิม)
       // ID มุมขวาบน
       ctx.textAlign = "right";
       ctx.font = "36px 'Sarabun', sans-serif";
@@ -200,6 +205,26 @@
     function genCertImg(id, name, pos) {
       drawCertificate(id, name, pos);
       return certCanvas.toDataURL("image/png");
+    }
+
+    // ------------ แสดงใบเกียรติบัตรจาก record -------------
+    function showCertFromRecord(record) {
+      const imgUrl = genCertImg(record.idString, record.name, record.position);
+      Swal.fire({
+        title: "ตัวอย่างเกียรติบัตร",
+        html: `
+          <img src="${imgUrl}" class="w-full rounded mb-3" />
+          <a href="${imgUrl}" download="Certificate_${record.idString}.png"
+             class="inline-block bg-red-600 hover:bg-red-500 text-xs px-3 py-1 rounded text-white">
+             ดาวน์โหลด PNG
+          </a>
+        `,
+        showConfirmButton: false,
+        showCloseButton: true,
+        width: "720px",
+        background: "#020617",
+        color: "#e5e7eb"
+      });
     }
 
     // ------------ สร้างเกียรติบัตร -------------
@@ -221,21 +246,23 @@
 
       certStatus.textContent = "กำลังสร้าง...";
       setTimeout(() => {
-        const img = genCertImg(idStr, name, pos);
-        certificates.push({
+        // สร้าง record เฉพาะ metadata
+        const record = {
           idNumber: idNum,
           idString: idStr,
           name,
-          position: pos,
-          imageDataUrl: img
-        });
+          position: pos
+        };
+        certificates.push(record);
         saveStorage();
         renderCards(certificates);
         certForm.reset();
         certIdInput.value = fmtId(getNextId());
         certStatus.textContent = "สร้างสำเร็จ!";
-        showCert(img, idStr);
-      }, 200);
+
+        // แสดงใบล่าสุด
+        showCertFromRecord(record);
+      }, 150);
     };
 
     // ------------ ค้นหาแบบ realtime -------------
@@ -252,7 +279,10 @@
 
     // ------------ Initial load -------------
     window.onload = () => {
+      // โหลดเฉพาะ metadata เก่า ถ้าเคยมี
       certificates = loadStorage();
+
+      // ถ้าเคยใช้ key เก่าแล้วกินพื้นที่เยอะ ผู้ใช้สามารถลบเองจาก DevTools > Application > Local Storage
       renderCards(certificates);
       certIdInput.value = fmtId(getNextId());
     };
