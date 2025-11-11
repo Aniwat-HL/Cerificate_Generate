@@ -10,6 +10,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Firebase (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <style>
     body { font-family: 'Sarabun', sans-serif; }
@@ -111,7 +114,35 @@
         </form>
       </section>
 
-      <!-- ไม่มีส่วนค้นหาอีกต่อไป -->
+      <!-- ส่วนค้นหาเกียรติบัตรจาก Firebase -->
+      <section class="bg-slate-900/70 border border-slate-700 rounded-2xl p-6 shadow-lg">
+        <h2 class="text-xl md:text-2xl font-semibold mb-2">ค้นหาเกียรติบัตร (Firebase)</h2>
+        <p class="text-sm text-slate-300 mb-3">
+          พิมพ์ <span class="font-semibold">ชื่อ</span> (เช่น aniwat) หรือ <span class="font-semibold">ID</span> (เช่น 001) แล้วกดค้นหา<br>
+          ถ้าไม่พิมพ์อะไรแล้วกดค้นหา จะแสดงรายการล่าสุดจาก Firebase
+        </p>
+        <div class="flex flex-col md:flex-row gap-2 md:items-center">
+          <input id="searchInput" type="text"
+                 class="flex-1 rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                 placeholder="ค้นหาด้วยชื่อหรือ ID..."/>
+          <div class="flex gap-2">
+            <button id="searchBtn"
+                    class="rounded-xl bg-red-600 hover:bg-red-500 px-4 py-2 text-sm font-semibold">
+              ค้นหา
+            </button>
+            <button id="clearSearchBtn"
+                    class="rounded-xl bg-slate-700 hover:bg-slate-600 px-4 py-2 text-sm">
+              ล้าง
+            </button>
+          </div>
+        </div>
+        <p id="searchStatus" class="text-xs text-slate-400 mt-2"></p>
+
+        <div id="searchResults"
+             class="mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- การ์ดผลการค้นหา -->
+        </div>
+      </section>
 
     </div>
   </main>
@@ -125,6 +156,21 @@
   <canvas id="certCanvas" width="3508" height="2480" class="hidden"></canvas>
 
   <script>
+    // ---------- Firebase Config & Init ----------
+    const firebaseConfig = {
+      apiKey: "AIzaSyBqhRPTX1xpRS6jnWUDB6M5XfHQkquDA5E",
+      authDomain: "valorant-cert-system.firebaseapp.com",
+      projectId: "valorant-cert-system",
+      storageBucket: "valorant-cert-system.firebasestorage.app",
+      messagingSenderId: "268193476623",
+      appId: "1:268193476623:web:61b0914dcef4fa6ef4b37a",
+      measurementId: "G-Y2QE9SKT2G"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const COLLECTION_NAME = "valorant_feedback";
+
     // ---------- เทมเพลตเกียรติบัตร ----------
     const TEMPLATE_SRC = "img/certificate-template.png"; // รูปต้นแบบ
     const templateImg = new Image();
@@ -136,7 +182,7 @@
     };
     templateImg.src = TEMPLATE_SRC;
 
-    // ---------- เกี่ยวกับ ID ----------
+    // ---------- เกี่ยวกับ ID (ใช้ localStorage เป็นตัวรันเลข) ----------
     const ID_STORAGE_KEY = "valorant_last_id";
     function loadLastId() {
       const raw = localStorage.getItem(ID_STORAGE_KEY);
@@ -162,6 +208,12 @@
     const scoreInput = document.getElementById("scoreInput");
     const suggestionInput = document.getElementById("suggestionInput");
     const certStatus = document.getElementById("certStatus");
+
+    const searchInput = document.getElementById("searchInput");
+    const searchBtn = document.getElementById("searchBtn");
+    const clearSearchBtn = document.getElementById("clearSearchBtn");
+    const searchStatus = document.getElementById("searchStatus");
+    const searchResults = document.getElementById("searchResults");
 
     let lastIdNumber = loadLastId();
 
@@ -214,8 +266,27 @@
       });
     }
 
+    // ---------- บันทึกแบบประเมินลง Firestore ----------
+    async function saveFeedbackToFirebase(record) {
+      try {
+        await db.collection(COLLECTION_NAME).add({
+          idNumber: record.idNumber,
+          idString: record.idString,
+          name: record.name,
+          position: record.position,
+          feeling: record.feeling,
+          score: record.score,
+          suggestion: record.suggestion,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log("บันทึกข้อมูลลง Firestore สำเร็จ");
+      } catch (err) {
+        console.error("บันทึกแบบประเมินลง Firestore ล้มเหลว:", err);
+      }
+    }
+
     // ---------- Submit ฟอร์ม ----------
-    certForm.addEventListener("submit", (e) => {
+    certForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const name = nameInput.value.trim();
@@ -257,23 +328,146 @@
 
       certStatus.textContent = "กำลังสร้างเกียรติบัตร...";
 
-      setTimeout(() => {
+      Swal.fire({
+        title: "กำลังสร้างเกียรติบัตร...",
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+      });
+
+      try {
         const imgUrl = generateCertificateImage(idString, name, position);
 
-        // อัปเดต ID ล่าสุด
+        // อัปเดต ID ล่าสุดใน localStorage
         lastIdNumber = idNumber;
         saveLastId(lastIdNumber);
         certIdInput.value = fmtId(lastIdNumber + 1);
 
-        certStatus.textContent = "สร้างเกียรติบัตรสำเร็จ!";
+        // บันทึกลง Firestore
+        await saveFeedbackToFirebase({
+          idNumber,
+          idString,
+          name,
+          position,
+          feeling,
+          score: scoreNum,
+          suggestion
+        });
 
-        // เคลียร์เฉพาะคำถาม (จะได้ใช้ชื่อ/ตำแหน่งเดิมซ้ำง่าย)
+        certStatus.textContent = "สร้างเกียรติบัตรสำเร็จ!";
+        // เคลียร์เฉพาะคำถาม
         feelingInput.value = "";
         scoreInput.value = "";
         suggestionInput.value = "";
 
+        Swal.close();
         showCertificateModal(imgUrl, idString);
-      }, 150);
+      } catch (err) {
+        console.error(err);
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: "ไม่สามารถสร้าง หรือบันทึกเกียรติบัตรได้ กรุณาลองใหม่อีกครั้ง",
+        });
+        certStatus.textContent = "เกิดข้อผิดพลาด";
+      }
+    });
+
+    // ---------- ค้นหาจาก Firebase ----------
+    function renderSearchResults(list) {
+      searchResults.innerHTML = "";
+      if (!list.length) {
+        searchResults.innerHTML = `<p class="text-sm text-slate-300 col-span-full">ไม่พบข้อมูลที่ค้นหา</p>`;
+        return;
+      }
+
+      list.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "bg-slate-800/80 border border-slate-700 rounded-xl p-4 flex flex-col justify-between";
+
+        card.innerHTML = `
+          <div class="space-y-1 text-sm">
+            <p><span class="font-semibold text-slate-100">ID:</span> ${item.idString}</p>
+            <p><span class="font-semibold text-slate-100">ชื่อ:</span> ${item.name}</p>
+            <p><span class="font-semibold text-slate-100">ตำแหน่ง:</span> ${item.position}</p>
+            <p class="text-xs text-slate-300">คะแนน: ${item.score} / 10</p>
+          </div>
+          <button class="mt-3 rounded-lg bg-red-600 hover:bg-red-500 text-xs py-2 font-semibold">
+            ดู / ดาวน์โหลดเกียรติบัตร
+          </button>
+        `;
+
+        const btn = card.querySelector("button");
+        btn.addEventListener("click", () => {
+          if (!templateLoaded) {
+            Swal.fire("รูปเทมเพลตยังโหลดไม่เสร็จ", "", "error");
+            return;
+          }
+          const imgUrl = generateCertificateImage(item.idString, item.name, item.position);
+          showCertificateModal(imgUrl, item.idString);
+        });
+
+        searchResults.appendChild(card);
+      });
+    }
+
+    async function searchFromFirebase(keyword) {
+      searchStatus.textContent = "กำลังค้นหาข้อมูลจาก Firebase...";
+      searchResults.innerHTML = "";
+
+      try {
+        let docs = [];
+
+        if (!keyword) {
+          // แสดงรายการล่าสุด (เช่น 20 รายการล่าสุด)
+          const snap = await db.collection(COLLECTION_NAME)
+            .orderBy("createdAt", "desc")
+            .limit(20)
+            .get();
+          snap.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+        } else {
+          const key = keyword.toLowerCase();
+
+          // ค้นหา ID ตรงตัว
+          const byIdSnap = await db.collection(COLLECTION_NAME)
+            .where("idString", "==", keyword)
+            .get();
+          byIdSnap.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+
+          // ค้นหา name แบบขึ้นต้น (prefix) ด้วยคำค้น (ต้อง orderBy name ถึงใช้ startAt ได้)
+          const byNameSnap = await db.collection(COLLECTION_NAME)
+            .orderBy("name")
+            .startAt(keyword)
+            .endAt(keyword + "\uf8ff")
+            .get();
+          byNameSnap.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+
+          // ลบ duplicate (ถ้า doc ซ้ำกัน)
+          const seen = new Set();
+          docs = docs.filter(d => {
+            if (seen.has(d.id)) return false;
+            seen.add(d.id);
+            return true;
+          });
+        }
+
+        searchStatus.textContent = `พบทั้งหมด ${docs.length} รายการ`;
+        renderSearchResults(docs);
+      } catch (err) {
+        console.error(err);
+        searchStatus.textContent = "เกิดข้อผิดพลาดในการดึงข้อมูลจาก Firebase";
+        searchResults.innerHTML = `<p class="text-sm text-red-400 col-span-full">ไม่สามารถดึงข้อมูลจาก Firebase ได้</p>`;
+      }
+    }
+
+    searchBtn.addEventListener("click", () => {
+      const keyword = searchInput.value.trim();
+      searchFromFirebase(keyword);
+    });
+
+    clearSearchBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      searchStatus.textContent = "";
+      searchResults.innerHTML = "";
     });
 
     // ---------- Initial load ----------
