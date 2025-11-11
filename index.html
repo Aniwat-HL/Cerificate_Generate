@@ -4,13 +4,9 @@
   <meta charset="UTF-8" />
   <title>ระบบเกียรติบัตร Valorant E-sport</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- ฟอนต์ -->
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet" />
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
   <style>
     body { font-family: 'Sarabun', sans-serif; }
   </style>
@@ -24,7 +20,7 @@
         ระบบสร้าง / ดาวน์โหลดเกียรติบัตร Valorant E-sport
       </h1>
       <p class="text-sm md:text-base text-slate-100/90 mt-2">
-        กรอกชื่อและตำแหน่ง แล้วระบบจะใส่ลงบนเทมเพลตเกียรติบัตร Valorant ให้อัตโนมัติ (เก็บข้อมูลเฉพาะ ID / ชื่อ / ตำแหน่ง ในเครื่อง)
+        กรอกชื่อและเลือกตำแหน่ง ระบบจะสร้างใบเกียรติบัตร Valorant ให้อัตโนมัติ
       </p>
     </div>
   </header>
@@ -43,14 +39,24 @@
                    class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" />
           </div>
           <div>
-            <label class="block text-sm mb-1">ชื่อผู้รับ (name)</label>
+            <label class="block text-sm mb-1">ชื่อผู้รับ</label>
             <input id="nameInput" required placeholder="ชื่อ-นามสกุล"
                    class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" />
           </div>
           <div class="md:col-span-2">
-            <label class="block text-sm mb-1">ตำแหน่ง (position)</label>
-            <input id="positionInput" required placeholder="เช่น Player, Captain, MVP..."
-                   class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm" />
+            <label class="block text-sm mb-1">ตำแหน่ง</label>
+            <select id="positionSelect" required
+                    class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm">
+              <option value="">-- เลือกตำแหน่ง --</option>
+              <option>Match Official</option>
+              <option>Coach</option>
+              <option>Tournament Organizer</option>
+              <option>Tournament Director</option>
+              <option>Broadcast Team</option>
+              <option>Host</option>
+              <option>Caster</option>
+              <option>Staff</option>
+            </select>
           </div>
           <div class="md:col-span-2 flex justify-between items-center mt-3">
             <button type="submit"
@@ -62,7 +68,7 @@
         </form>
       </section>
 
-      <!-- ค้นหาเกียรติบัตร -->
+      <!-- ค้นหา -->
       <section class="bg-slate-900/70 border border-slate-700 rounded-2xl p-6 shadow-lg">
         <h2 class="text-xl font-semibold mb-3">ค้นหาเกียรติบัตร</h2>
         <input id="searchInput" placeholder="ค้นหาชื่อหรือ ID..."
@@ -73,29 +79,21 @@
     </div>
   </main>
 
-  <!-- Footer -->
   <footer class="border-t border-slate-800 text-center text-slate-400 py-3 text-xs">
     © 2025 Valorant E-sport Certificate System
   </footer>
 
-  <!-- Canvas: A4 แนวนอน 29.7 x 21 cm @ 300dpi = 3508x2480 -->
   <canvas id="certCanvas" width="3508" height="2480" class="hidden"></canvas>
 
   <script>
-    // ------------ CONFIG รูปเทมเพลต -------------
-    const TEMPLATE_SRC = "img/certificate-template.png"; // ให้รูปอยู่ตำแหน่งนี้
+    const TEMPLATE_SRC = "img/certificate-template.png";
     const templateImg = new Image();
     let templateLoaded = false;
     templateImg.onload = () => templateLoaded = true;
-    templateImg.onerror = () => {
-      console.error("โหลดรูปเทมเพลตไม่สำเร็จ:", TEMPLATE_SRC);
-      templateLoaded = false;
-    };
     templateImg.src = TEMPLATE_SRC;
 
-    // ------------ STATE & DOM -------------
-    const STORAGE_KEY = "valorant_certs_meta";   // เก็บเฉพาะ metadata
-    let certificates = [];                       // { idNumber, idString, name, position }
+    const STORAGE_KEY = "valorant_certs_meta";
+    let certificates = [];
 
     const certCanvas = document.getElementById("certCanvas");
     const ctx = certCanvas.getContext("2d");
@@ -103,54 +101,35 @@
     const certForm = document.getElementById("certForm");
     const certIdInput = document.getElementById("certIdInput");
     const nameInput = document.getElementById("nameInput");
-    const positionInput = document.getElementById("positionInput");
+    const positionSelect = document.getElementById("positionSelect");
     const certStatus = document.getElementById("certStatus");
     const searchInput = document.getElementById("searchInput");
     const cardsContainer = document.getElementById("cardsContainer");
 
-    // ------------ LocalStorage helpers -------------
     function loadStorage() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         return raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        console.error("loadStorage error", e);
+      } catch {
         return [];
       }
     }
 
     function saveStorage() {
-      try {
-        // เก็บเฉพาะ fields ที่จำเป็น ไม่เก็บรูป
-        const slim = certificates.map(c => ({
-          idNumber: c.idNumber,
-          idString: c.idString,
-          name: c.name,
-          position: c.position
-        }));
-        localStorage.removeItem(STORAGE_KEY); // เคลียร์ของเก่าให้กินเนื้อที่น้อยสุด
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(slim));
-      } catch (e) {
-        console.error("saveStorage error", e);
-        Swal.fire({
-          icon: "warning",
-          title: "พื้นที่จัดเก็บเต็ม",
-          text: "ไม่สามารถบันทึกข้อมูลเพิ่มได้ กรุณาลบ localStorage ของเว็บนี้หรือลบรายการเก่า ๆ",
-        });
-      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(certificates));
     }
 
     function getNextId() {
       return certificates.length ? Math.max(...certificates.map(c => c.idNumber)) + 1 : 1;
     }
+
     function fmtId(n) {
       return String(n).padStart(3, "0");
     }
 
-    // ------------ แสดงการ์ดค้นหา -------------
     function renderCards(list) {
       cardsContainer.innerHTML = "";
-      if (!list || !list.length) {
+      if (!list.length) {
         cardsContainer.innerHTML = `<p class="text-sm text-slate-300 col-span-full">ไม่พบข้อมูล</p>`;
         return;
       }
@@ -170,32 +149,19 @@
       });
     }
 
-    // ------------ วาดใบเกียรติบัตรบน Canvas -------------
     function drawCertificate(id, name, pos) {
       const w = certCanvas.width, h = certCanvas.height;
       ctx.clearRect(0, 0, w, h);
-
-      // เทมเพลตพื้นหลัง
-      if (templateLoaded) {
-        ctx.drawImage(templateImg, 0, 0, w, h);
-      } else {
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, w, h);
-      }
+      if (templateLoaded) ctx.drawImage(templateImg, 0, 0, w, h);
+      else { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h); }
 
       ctx.textAlign = "center";
       ctx.fillStyle = "#000";
 
-      // ✅ ชื่อ – ขยับลงมา (1310)
+      // แสดงชื่อ + ตำแหน่งในวงเล็บ เช่น “Aniwat ( Staff )”
       ctx.font = "bold 100px 'Times New Roman', serif";
-      ctx.fillText(name, w / 2, 1310);
+      ctx.fillText(`${name} ( ${pos} )`, w / 2, 1310);
 
-      // ✅ ตำแหน่ง – ขยับตาม (1390)
-      ctx.font = "46px 'Times New Roman', serif";
-      ctx.fillText(pos, w / 2, 1390);
-
-      // ❌ ไม่เขียนวันที่ (ใช้ในรูปเดิม)
-      // ID มุมขวาบน
       ctx.textAlign = "right";
       ctx.font = "36px 'Sarabun', sans-serif";
       ctx.fillStyle = "#555";
@@ -207,7 +173,6 @@
       return certCanvas.toDataURL("image/png");
     }
 
-    // ------------ แสดงใบเกียรติบัตรจาก record -------------
     function showCertFromRecord(record) {
       const imgUrl = genCertImg(record.idString, record.name, record.position);
       Swal.fire({
@@ -227,62 +192,36 @@
       });
     }
 
-    // ------------ สร้างเกียรติบัตร -------------
     certForm.onsubmit = e => {
       e.preventDefault();
       const name = nameInput.value.trim();
-      const pos = positionInput.value.trim();
-      if (!name || !pos) {
-        Swal.fire("กรุณากรอกชื่อและตำแหน่งให้ครบ");
-        return;
-      }
-      if (!templateLoaded) {
-        Swal.fire("รูปเทมเพลตยังโหลดไม่เสร็จ ลองใหม่อีกครั้ง");
-        return;
-      }
+      const pos = positionSelect.value.trim();
+      if (!name || !pos) return Swal.fire("กรุณากรอกชื่อและเลือกตำแหน่ง");
+      if (!templateLoaded) return Swal.fire("รูปเทมเพลตยังโหลดไม่เสร็จ");
 
       const idNum = getNextId();
       const idStr = fmtId(idNum);
 
-      certStatus.textContent = "กำลังสร้าง...";
-      setTimeout(() => {
-        // สร้าง record เฉพาะ metadata
-        const record = {
-          idNumber: idNum,
-          idString: idStr,
-          name,
-          position: pos
-        };
-        certificates.push(record);
-        saveStorage();
-        renderCards(certificates);
-        certForm.reset();
-        certIdInput.value = fmtId(getNextId());
-        certStatus.textContent = "สร้างสำเร็จ!";
-
-        // แสดงใบล่าสุด
-        showCertFromRecord(record);
-      }, 150);
+      const record = { idNumber: idNum, idString: idStr, name, position: pos };
+      certificates.push(record);
+      saveStorage();
+      renderCards(certificates);
+      certForm.reset();
+      certIdInput.value = fmtId(getNextId());
+      certStatus.textContent = "สร้างสำเร็จ!";
+      showCertFromRecord(record);
     };
 
-    // ------------ ค้นหาแบบ realtime -------------
     searchInput.oninput = () => {
-      const kw = searchInput.value.trim().toLowerCase();
+      const kw = searchInput.value.toLowerCase();
       const list = kw
-        ? certificates.filter(c =>
-            c.name.toLowerCase().includes(kw) ||
-            c.idString.toLowerCase().includes(kw)
-          )
+        ? certificates.filter(c => c.name.toLowerCase().includes(kw) || c.idString.includes(kw))
         : certificates;
       renderCards(list);
     };
 
-    // ------------ Initial load -------------
     window.onload = () => {
-      // โหลดเฉพาะ metadata เก่า ถ้าเคยมี
       certificates = loadStorage();
-
-      // ถ้าเคยใช้ key เก่าแล้วกินพื้นที่เยอะ ผู้ใช้สามารถลบเองจาก DevTools > Application > Local Storage
       renderCards(certificates);
       certIdInput.value = fmtId(getNextId());
     };
