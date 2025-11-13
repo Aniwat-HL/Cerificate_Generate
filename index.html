@@ -131,7 +131,7 @@
 
       <!-- ส่วนค้นหาเกียรติบัตรจาก Firebase -->
       <section class="bg-slate-900/70 border border-slate-700 rounded-2xl p-6 shadow-lg">
-        <h2 class="text-xl md:text-2xl font-semibold mb-2">ค้นหาเกียรติบัตร (Firebase)</h2>
+        <h2 class="text-xl md:text-2xl font-semibold mb-2">ค้นหาเกียรติบัตร</h2>
         <p class="text-sm text-slate-300 mb-3">
           พิมพ์ <span class="font-semibold">ชื่อ</span> หรือ <span class="font-semibold">ID</span> (เช่น 001) แล้วกดค้นหา<br>
           ถ้าไม่พิมพ์อะไรแล้วกดค้นหา จะแสดงรายการทั้งหมด
@@ -476,7 +476,7 @@
         renderSearchResults(docs);
       } catch (err) {
         console.error(err);
-        searchStatus.textContent = "เกิดข้อผิดพลาดในการดึงข้อมูลจาก Firebase";
+        searchStatus.textContent = "เกิดข้อผิดพลาดในการดึงข้อมูล";
         searchResults.innerHTML = `<p class="text-sm text-red-400 col-span-full">ไม่สามารถดึงข้อมูลจาก Firebase ได้</p>`;
       }
     }
